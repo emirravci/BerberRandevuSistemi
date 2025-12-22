@@ -1,0 +1,165 @@
+@{
+    ViewData["Title"] = "Randevu Takvimi";
+}
+
+<h2 class="mb-3">Randevu Takvimi</h2>
+
+<div class="alert alert-info mb-3">
+    Takvim üzerinde seçtiğiniz saat aralıkları personel çalışma saatleri olarak kaydedilir.
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Takvimim</span>
+        <small class="text-muted">Randevular ve çalışma saatleri</small>
+    </div>
+    <div class="card-body">
+        <div id="personelCalendar"></div>
+
+        <!-- Randevu detay modalı -->
+        <div class="modal fade" id="personelRandevuModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title">Randevu Detayı</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <dl class="row mb-0">
+                            <dt class="col-4">Tarih / Saat</dt>
+                            <dd class="col-8" id="personelModalDateTime"></dd>
+
+                            <dt class="col-4">Müşteri</dt>
+                            <dd class="col-8" id="personelModalMusteri"></dd>
+
+                            <dt class="col-4">Durum</dt>
+                            <dd class="col-8" id="personelModalDurum"></dd>
+
+                            <dt class="col-4">Ücret</dt>
+                            <dd class="col-8" id="personelModalUcret"></dd>
+                        </dl>
+                    </div>
+                    <div class="modal-footer border-0" id="personelModalFooter">
+                        <form asp-controller="Personel" asp-action="Onayla" method="post" class="d-inline" id="personelModalOnaylaForm">
+                            <input type="hidden" name="id" id="personelModalRandevuId" />
+                            <input type="hidden" name="returnUrl" value="@Url.Action("Takvim", "Personel")" />
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="fa-solid fa-check"></i> Onayla
+                            </button>
+                        </form>
+                        <form asp-controller="Personel" asp-action="IptalEt" method="post" class="d-inline" id="personelModalIptalForm">
+                            <input type="hidden" name="id" id="personelModalRandevuIdIptal" />
+                            <input type="hidden" name="returnUrl" value="@Url.Action("Takvim", "Personel")" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="fa-solid fa-xmark"></i> İptal
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('personelCalendar');
+            if (!calendarEl) return;
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                height: 650,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                locale: 'tr',
+                selectable: true,
+                selectMirror: true,
+                slotMinTime: '08:00:00',
+                slotMaxTime: '22:00:00',
+                select: function (info) {
+                    if (!confirm('Seçilen aralığı çalışma saati olarak eklemek istiyor musunuz?')) {
+                        calendar.unselect();
+                        return;
+                    }
+
+                    fetch('@Url.Action("CalismaSaatiEkle", "Personel")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                        },
+                        body: new URLSearchParams({
+                            start: info.startStr,
+                            end: info.endStr
+                        })
+                    }).then(function (response) {
+                        if (response.ok) {
+                            calendar.refetchEvents();
+                        }
+                    }).catch(function () {
+                        alert('Çalışma saati kaydedilirken bir hata oluştu.');
+                    }).finally(function () {
+                        calendar.unselect();
+                    });
+                },
+                eventSources: [
+                    {
+                        url: '@Url.Action("RandevuTakvimiVeri", "Personel")',
+                        color: '#22c55e',
+                        textColor: '#0f172a'
+                    },
+                    {
+                        url: '@Url.Action("CalismaSaatleriVeri", "Personel")'
+                    }
+                ],
+                eventClick: function (info) {
+                    if (info.event.display === 'background') {
+                        return;
+                    }
+
+                    var e = info.event;
+                    var start = e.start;
+                    if (!start) return;
+
+                    var tarih = start.toLocaleDateString('tr-TR');
+                    var saat = start.toTimeString().substring(0, 5);
+                    var durum = e.extendedProps.durum || '';
+
+                    document.getElementById('personelModalDateTime').innerText = tarih + ' ' + saat;
+                    document.getElementById('personelModalMusteri').innerText = e.extendedProps.musteriId || '';
+                    document.getElementById('personelModalDurum').innerText = durum;
+                    document.getElementById('personelModalUcret').innerText = e.title || '';
+                    
+                    var randevuId = e.id;
+                    document.getElementById('personelModalRandevuId').value = randevuId;
+                    document.getElementById('personelModalRandevuIdIptal').value = randevuId;
+
+                    // Sadece Beklemede durumundaki randevular için onayla/iptal butonlarını göster
+                    var onaylaForm = document.getElementById('personelModalOnaylaForm');
+                    var iptalForm = document.getElementById('personelModalIptalForm');
+                    
+                    if (durum === 'Beklemede') {
+                        onaylaForm.style.display = 'inline-block';
+                        iptalForm.style.display = 'inline-block';
+                    } else {
+                        onaylaForm.style.display = 'none';
+                        iptalForm.style.display = 'none';
+                    }
+
+                    var modal = new bootstrap.Modal(document.getElementById('personelRandevuModal'));
+                    modal.show();
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+}
+
+

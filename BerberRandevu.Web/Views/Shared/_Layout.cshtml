@@ -9,90 +9,178 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/BerberRandevu.Web.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="fa-solid fa-scissors me-1"></i> Berber Randevu
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
-                        </li>
-
-                        @if (User.IsInRole("Kullanıcı"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Randevu" asp-action="Olustur">Randevu Al</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Randevu" asp-action="BenimRandevularim">Randevularım</a>
-                            </li>
-                        }
-                        else if (User.IsInRole("Personel"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Personel" asp-action="Bekleyen">Bekleyen Randevular</a>
-                            </li>
-                        }
-                        else if (User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Yönetim Paneli</a>
-                            </li>
-                        }
-                    </ul>
-                    <ul class="navbar-nav">
-                        @if (User.Identity?.IsAuthenticated ?? false)
-                        {
-                            <li class="nav-item me-2 align-self-center text-muted">
-                                <i class="fa-regular fa-user"></i>
-                                <span class="ms-1">@User.Identity!.Name</span>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Hesap" asp-action="Cikis" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                                        <i class="fa-solid fa-right-from-bracket"></i> Çıkış
-                                    </button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="btn btn-outline-primary btn-sm me-2" asp-controller="Hesap" asp-action="Giris">
-                                    Giriş
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-primary btn-sm" asp-controller="Hesap" asp-action="Kayit">
-                                    Kayıt Ol
-                                </a>
-                            </li>
-                        }
-                    </ul>
-                </div>
+<body class="app-body">
+    @if (!(User.Identity?.IsAuthenticated ?? false))
+    {
+        <!-- Giriş/Kayıt gibi anonim sayfalar için sade layout -->
+        <div class="d-flex align-items-center justify-content-center" style="min-height:100vh;">
+            <div class="container" style="max-width:420px;">
+                @RenderBody()
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container d-flex justify-content-between">
-            <span>&copy; @DateTime.Now.Year - Berber Randevu Sistemi</span>
-            <span class="text-muted small">.NET 8 • ASP.NET Core MVC • Bootstrap 5</span>
         </div>
-    </footer>
+    }
+    else
+    {
+        <div class="app-layout">
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <a asp-controller="Home" asp-action="Index" class="sidebar-brand-link">
+                    <i class="fa-solid fa-scissors me-2"></i>
+                    <span>Berber Randevu</span>
+                </a>
+            </div>
+
+            <div class="sidebar-user">
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <div class="sidebar-user-avatar">
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">@User.Identity!.Name</div>
+                        <div class="sidebar-user-role">
+                            @if (User.IsInRole("Admin")) { <span>Yönetici</span> }
+                            else if (User.IsInRole("Personel")) { <span>Personel</span> }
+                            else if (User.IsInRole("Kullanıcı")) { <span>Müşteri</span> }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="sidebar-user-guest">
+                        <span>Hoş geldiniz</span>
+                    </div>
+                }
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-title">Genel</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" class="sidebar-link">
+                            <i class="fa-solid fa-house"></i>
+                            <span>Ana Sayfa</span>
+                        </a>
+                    </li>
+                </ul>
+
+                @if (User.IsInRole("Kullanıcı"))
+                {
+                    <div class="sidebar-section-title">Randevularım</div>
+                    <ul class="sidebar-menu">
+                        <li>
+                            <a asp-controller="Randevu" asp-action="Olustur" class="sidebar-link">
+                                <i class="fa-solid fa-calendar-plus"></i>
+                                <span>Randevu Al</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Randevu" asp-action="BenimRandevularim" class="sidebar-link">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <span>Randevularım</span>
+                            </a>
+                        </li>
+                    </ul>
+                }
+                else if (User.IsInRole("Personel"))
+                {
+                    <div class="sidebar-section-title">Personel</div>
+                    <ul class="sidebar-menu">
+                        <li>
+                            <a asp-controller="Personel" asp-action="Bekleyen" class="sidebar-link">
+                                <i class="fa-solid fa-list-check"></i>
+                                <span>Bekleyen Randevular</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Personel" asp-action="Takvim" class="sidebar-link">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <span>Takvimim</span>
+                            </a>
+                        </li>
+                    </ul>
+                }
+                else if (User.IsInRole("Admin"))
+                {
+                    <div class="sidebar-section-title">Yönetim</div>
+                    <ul class="sidebar-menu">
+                        <li>
+                            <a asp-controller="Admin" asp-action="Index" class="sidebar-link">
+                                <i class="fa-solid fa-gauge-high"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Admin" asp-action="Randevular" class="sidebar-link">
+                                <i class="fa-solid fa-calendar-check"></i>
+                                <span>Randevular</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Admin" asp-action="Kullanicilar" class="sidebar-link">
+                                <i class="fa-solid fa-users"></i>
+                                <span>Kullanıcı Yönetimi</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Odeme" asp-action="OdemeAl" class="sidebar-link">
+                                <i class="fa-solid fa-cash-register"></i>
+                                <span>Ödeme Al</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Gider" asp-action="Index" class="sidebar-link">
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                <span>Giderler</span>
+                            </a>
+                        </li>
+                    </ul>
+                }
+            </nav>
+
+            <div class="sidebar-footer">
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <form asp-controller="Hesap" asp-action="Cikis" method="post" class="d-grid">
+                        <button type="submit" class="btn btn-outline-light btn-sm">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Çıkış
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="d-grid gap-2">
+                        <a class="btn btn-outline-light btn-sm" asp-controller="Hesap" asp-action="Giris">
+                            Giriş
+                        </a>
+                        <a class="btn btn-primary btn-sm" asp-controller="Hesap" asp-action="Kayit">
+                            Kayıt Ol
+                        </a>
+                    </div>
+                }
+            </div>
+        </aside>
+
+            <div class="app-main">
+                <header class="app-topbar">
+                    <div class="app-topbar-title">
+                        <span>@ViewData["Title"]</span>
+                    </div>
+                </header>
+
+                <main class="app-content">
+                    @RenderBody()
+                </main>
+
+                <footer class="app-footer text-muted">
+                    <div class="d-flex justify-content-between">
+                        <span>&copy; @DateTime.Now.Year - Berber Randevu Sistemi</span>
+                        <span class="text-muted small">.NET 8 • ASP.NET Core MVC • Bootstrap 5</span>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    }
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

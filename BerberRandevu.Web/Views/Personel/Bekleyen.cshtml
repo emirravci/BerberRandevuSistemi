@@ -5,6 +5,11 @@
 
 <h2 class="mb-3">Bekleyen Randevular</h2>
 
+@if (TempData["Basari"] != null)
+{
+    <div class="alert alert-success">@TempData["Basari"]</div>
+}
+
 @if (!Model.Any())
 {
     <div class="alert alert-info">Bugün için bekleyen randevu bulunmuyor.</div>

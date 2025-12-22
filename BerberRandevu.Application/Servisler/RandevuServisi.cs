@@ -78,6 +78,17 @@ public class RandevuServisi : IRandevuServisi
             .Select(r => _mapper.Map<RandevuDto>(r))
             .ToList();
     }
+
+    public async Task<IReadOnlyList<RandevuDto>> TumRandevulariniGetirAsync(DateTime? baslangicTarihi = null, DateTime? bitisTarihi = null)
+    {
+        var randevular = await _unitOfWork.RandevuDeposu.FiltreliGetirAsync(r =>
+            (!baslangicTarihi.HasValue || r.Tarih.Date >= baslangicTarihi.Value.Date) &&
+            (!bitisTarihi.HasValue || r.Tarih.Date <= bitisTarihi.Value.Date));
+
+        return randevular
+            .Select(r => _mapper.Map<RandevuDto>(r))
+            .ToList();
+    }
 }
 
 

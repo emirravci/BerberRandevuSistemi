@@ -3,53 +3,157 @@
     ViewData["Title"] = "Randevu Al";
 }
 
-<h2 class="mb-4">Randevu Al</h2>
+<h2 class="mb-3">Randevu Al</h2>
 
 @if (TempData["Hata"] != null)
 {
     <div class="alert alert-danger">@TempData["Hata"]</div>
 }
 
-<form asp-action="Olustur" method="post" class="row g-3">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
+<div class="row g-3 mb-3">
     <div class="col-md-4">
-        <label asp-for="PersonelId" class="form-label"></label>
-        <select asp-for="PersonelId" class="form-select"
-                asp-items="@(new SelectList(Model.Personeller, nameof(BerberRandevu.Application.DTOlar.PersonelDto.Id), nameof(BerberRandevu.Application.DTOlar.PersonelDto.Ad)))">
-            <option value="">Personel seçiniz</option>
-        </select>
-        <span asp-validation-for="PersonelId" class="text-danger"></span>
+        <form asp-action="Olustur" method="post" id="randevuForm" class="card h-100">
+            <div class="card-body">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <div class="mb-3">
+                    <label asp-for="PersonelId" class="form-label"></label>
+                    <select asp-for="PersonelId" class="form-select" id="personelSelect"
+                            asp-items="@(new SelectList(Model.Personeller, nameof(BerberRandevu.Application.DTOlar.PersonelDto.Id), nameof(BerberRandevu.Application.DTOlar.PersonelDto.Ad)))">
+                        <option value="">Personel seçiniz</option>
+                    </select>
+                    <span asp-validation-for="PersonelId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Seçilen Tarih / Saat</label>
+                    <div class="small text-muted mb-1" id="seciliSlotText">
+                        Takvimden uygun bir saat seçiniz.
+                    </div>
+                    <input asp-for="Tarih" type="hidden" id="tarihInput" />
+                    <input asp-for="Saat" type="hidden" id="saatInput" />
+                    <span asp-validation-for="Tarih" class="text-danger"></span>
+                    <span asp-validation-for="Saat" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Ucret" class="form-label"></label>
+                    <input asp-for="Ucret" class="form-control" />
+                    <span asp-validation-for="Ucret" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-2">
+                    <i class="fa-solid fa-calendar-plus me-1"></i> Randevu Oluştur
+                </button>
+                <a asp-action="BenimRandevularim" class="btn btn-outline-secondary w-100">Randevularım</a>
+            </div>
+        </form>
     </div>
 
-    <div class="col-md-4">
-        <label asp-for="Tarih" class="form-label"></label>
-        <input asp-for="Tarih" class="form-control" />
-        <span asp-validation-for="Tarih" class="text-danger"></span>
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Takvimden Saat Seçin</span>
+                <small class="text-muted">Çalışma saatleri mavi, dolu randevular yeşil/sarı/kırmızı</small>
+            </div>
+            <div class="card-body">
+                <div id="randevuCalendar"></div>
+            </div>
+        </div>
     </div>
-
-    <div class="col-md-4">
-        <label asp-for="Saat" class="form-label"></label>
-        <input asp-for="Saat" class="form-control" />
-        <span asp-validation-for="Saat" class="text-danger"></span>
-    </div>
-
-    <div class="col-md-4">
-        <label asp-for="Ucret" class="form-label"></label>
-        <input asp-for="Ucret" class="form-control" />
-        <span asp-validation-for="Ucret" class="text-danger"></span>
-    </div>
-
-    <div class="col-12">
-        <button type="submit" class="btn btn-primary">
-            <i class="fa-solid fa-calendar-plus me-1"></i> Randevu Oluştur
-        </button>
-        <a asp-action="BenimRandevularim" class="btn btn-outline-secondary ms-2">Randevularım</a>
-    </div>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('randevuCalendar');
+            var personelSelect = document.getElementById('personelSelect');
+            var seciliSlotText = document.getElementById('seciliSlotText');
+            var tarihInput = document.getElementById('tarihInput');
+            var saatInput = document.getElementById('saatInput');
+
+            if (!calendarEl || !personelSelect) return;
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                height: 650,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                locale: 'tr',
+                selectable: true,
+                slotMinTime: '08:00:00',
+                slotMaxTime: '22:00:00',
+                select: function (info) {
+                    if (!personelSelect.value) {
+                        alert('Önce bir personel seçiniz.');
+                        calendar.unselect();
+                        return;
+                    }
+
+                    var start = info.start; // JS Date
+                    var tarihStr = start.toISOString().substring(0, 10);
+                    var saatStr = start.toTimeString().substring(0, 5);
+
+                    tarihInput.value = tarihStr;
+                    saatInput.value = saatStr;
+                    seciliSlotText.innerText = tarihStr + ' ' + saatStr + ' için randevu seçildi.';
+
+                    calendar.unselect();
+                },
+                events: function (info, successCallback, failureCallback) {
+                    if (!personelSelect.value) {
+                        successCallback([]);
+                        return;
+                    }
+
+                    $.ajax({
+                        url: '@Url.Action("PersonelTakvimVeri", "Randevu")',
+                        data: {
+                            personelId: personelSelect.value,
+                            start: info.startStr,
+                            end: info.endStr
+                        }
+                    }).done(function (data) {
+                        var mapped = data.map(function (e) {
+                            if (e.display === 'background') {
+                                return e;
+                            }
+
+                            var color = '#22c55e';
+                            if (e.extendedProps && e.extendedProps.durum === 'Beklemede') {
+                                color = '#facc15';
+                            } else if (e.extendedProps && e.extendedProps.durum === 'IptalEdildi') {
+                                color = '#ef4444';
+                            }
+
+                            return Object.assign({}, e, {
+                                backgroundColor: color,
+                                borderColor: color
+                            });
+                        });
+                        successCallback(mapped);
+                    }).fail(function () {
+                        failureCallback();
+                    });
+                }
+            });
+
+            calendar.render();
+
+            personelSelect.addEventListener('change', function () {
+                tarihInput.value = '';
+                saatInput.value = '';
+                seciliSlotText.innerText = 'Takvimden uygun bir saat seçiniz.';
+                calendar.refetchEvents();
+            });
+        });
+    </script>
 }
 
 

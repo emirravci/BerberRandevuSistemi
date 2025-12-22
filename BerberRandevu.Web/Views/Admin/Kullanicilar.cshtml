@@ -1,0 +1,78 @@
+@model IReadOnlyList<BerberRandevu.Web.Models.Admin.KullaniciListeItemViewModel>
+@{
+    ViewData["Title"] = "Kullanıcı Yönetimi";
+}
+
+<h2 class="mb-3">Kullanıcı Yönetimi</h2>
+
+@if (TempData["Basari"] != null)
+{
+    <div class="alert alert-success">@TempData["Basari"]</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                <tr>
+                    <th>E-posta</th>
+                    <th>Ad Soyad</th>
+                    <th>Roller</th>
+                    <th class="text-center">Aktif mi?</th>
+                    <th class="text-end">İşlemler</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Eposta</td>
+                        <td>@item.AdSoyad</td>
+                        <td>@item.Roller</td>
+                        <td class="text-center">
+                            @if (item.AktifMi)
+                            {
+                                <span class="badge bg-success">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Pasif</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <form asp-action="KullaniciAktiflikDegistir" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn btn-sm @(item.AktifMi ? "btn-outline-warning" : "btn-outline-success")">
+                                    @if (item.AktifMi)
+                                    {
+                                            <i class="fa-solid fa-user-slash me-1">Pasif Yap</i>
+                                    }
+                                    else
+                                    {
+                                            <i class="fa-solid fa-user-check me-1">Aktif Yap</i>
+                                    }
+                                </button>
+                            </form>
+
+                            <form asp-action="KullaniciRolGuncelle" method="post" class="d-inline ms-1">
+                                <input type="hidden" name="Id" value="@item.Id" />
+                                <select name="Rol" class="form-select form-select-sm d-inline w-auto">
+                                    <option value="Kullanıcı" selected>Kullanıcı</option>
+                                    <option value="Personel">Personel</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary ms-1">
+                                    <i class="fa-solid fa-rotate me-1"></i> Rol Güncelle
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+

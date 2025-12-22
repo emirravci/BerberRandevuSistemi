@@ -15,7 +15,8 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        return View();
+        // Ana sayfaya gelen herkesi login ekranına yönlendir
+        return RedirectToAction("Giris", "Hesap");
     }
 
     public IActionResult Privacy()

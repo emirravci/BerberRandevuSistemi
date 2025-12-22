@@ -22,10 +22,34 @@ public class HesapController : Controller
         _signInManager = signInManager;
     }
 
+    private async Task<IActionResult> YonlendirRolBazliAsync(UygulamaKullanicisi user)
+    {
+        var roller = await _userManager.GetRolesAsync(user);
+
+        if (roller.Contains("Admin"))
+            return RedirectToAction("Index", "Admin");
+
+        if (roller.Contains("Personel"))
+            return RedirectToAction("Takvim", "Personel");
+
+        // Varsayılan: normal kullanıcı
+        return RedirectToAction("Olustur", "Randevu");
+    }
+
     [HttpGet]
     [AllowAnonymous]
     public IActionResult Giris(string? returnUrl = null)
     {
+        if (User.Identity?.IsAuthenticated ?? false)
+        {
+            // Kullanıcı zaten giriş yaptıysa, login ekranını değil rolüne göre dashboard'u göster
+            var user = _userManager.GetUserAsync(User).Result;
+            if (user != null)
+            {
+                return YonlendirRolBazliAsync(user).Result;
+            }
+        }
+
         ViewData["ReturnUrl"] = returnUrl;
         return View(new GirisViewModel());
     }
@@ -55,7 +79,7 @@ public class HesapController : Controller
             if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);
 
-            return RedirectToAction("Index", "Home");
+            return await YonlendirRolBazliAsync(user);
         }
 
         ModelState.AddModelError(string.Empty, "Geçersiz giriş denemesi.");
@@ -89,7 +113,7 @@ public class HesapController : Controller
             // Varsayılan olarak kullanıcı rolü ver.
             await _userManager.AddToRoleAsync(user, "Kullanıcı");
             await _signInManager.SignInAsync(user, isPersistent: false);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Olustur", "Randevu");
         }
 
         foreach (var error in result.Errors)
@@ -105,7 +129,7 @@ public class HesapController : Controller
     public async Task<IActionResult> Cikis()
     {
         await _signInManager.SignOutAsync();
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Giris", "Hesap");
     }
 }
 

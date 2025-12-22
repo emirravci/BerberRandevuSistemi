@@ -3,14 +3,14 @@
     ViewData["Title"] = "Yönetim Paneli";
 }
 
-<h2 class="mb-4">Yönetim Paneli</h2>
+<h2 class="mb-3">Yönetim Paneli</h2>
 
 @if (TempData["Basari"] != null)
 {
     <div class="alert alert-success">@TempData["Basari"]</div>
 }
 
-<div class="row g-3">
+<div class="row g-3 mb-3">
     <div class="col-md-4">
         <div class="card border-success">
             <div class="card-header bg-success text-white">Bugün</div>
@@ -38,12 +38,159 @@
                 <a asp-controller="Odeme" asp-action="OdemeAl" class="btn btn-outline-success w-100 mb-2">
                     <i class="fa-solid fa-cash-register me-1"></i> Ödeme Al
                 </a>
-                <a asp-controller="Gider" asp-action="Index" class="btn btn-outline-danger w-100">
+                <a asp-controller="Gider" asp-action="Index" class="btn btn-outline-danger w-100 mb-2">
                     <i class="fa-solid fa-file-invoice-dollar me-1"></i> Giderler
+                </a>
+                <a asp-controller="Admin" asp-action="Kullanicilar" class="btn btn-outline-light w-100">
+                    <i class="fa-solid fa-users-gear me-1"></i> Kullanıcı Yönetimi
                 </a>
             </div>
         </div>
     </div>
 </div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Randevu Takvimi</span>
+        <small class="text-muted">Tüm personel randevuları</small>
+    </div>
+    <div class="card-body">
+        <div id="adminCalendar"></div>
+
+        <!-- Randevu detay modalı -->
+        <div class="modal fade" id="adminRandevuModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title">Randevu Detayı</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <dl class="row mb-0">
+                            <dt class="col-4">Tarih / Saat</dt>
+                            <dd class="col-8" id="adminModalDateTime"></dd>
+
+                            <dt class="col-4">Personel</dt>
+                            <dd class="col-8" id="adminModalPersonel"></dd>
+
+                            <dt class="col-4">Müşteri</dt>
+                            <dd class="col-8" id="adminModalMusteri"></dd>
+
+                            <dt class="col-4">Durum</dt>
+                            <dd class="col-8" id="adminModalDurum"></dd>
+
+                            <dt class="col-4">Ücret</dt>
+                            <dd class="col-8" id="adminModalUcret"></dd>
+                        </dl>
+                    </div>
+                    <div class="modal-footer border-0" id="adminModalFooter">
+                        <form asp-action="RandevuOnayla" method="post" class="d-inline" id="adminModalOnaylaForm">
+                            <input type="hidden" name="id" id="adminModalRandevuId" />
+                            <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Admin")" />
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="fa-solid fa-check"></i> Onayla
+                            </button>
+                        </form>
+                        <form asp-action="RandevuIptalEt" method="post" class="d-inline" id="adminModalIptalForm">
+                            <input type="hidden" name="id" id="adminModalRandevuIdIptal" />
+                            <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Admin")" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="fa-solid fa-xmark"></i> İptal
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('adminCalendar');
+            if (!calendarEl) return;
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                height: 650,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                locale: 'tr',
+                slotMinTime: '08:00:00',
+                slotMaxTime: '22:00:00',
+                events: function (info, successCallback, failureCallback) {
+                    $.ajax({
+                        url: '@Url.Action("RandevuTakvimiVeri", "Admin")',
+                        data: {
+                            start: info.startStr,
+                            end: info.endStr
+                        }
+                    }).done(function (data) {
+                        var mapped = data.map(function (e) {
+                            var color = '#22c55e';
+                            if (e.extendedProps && e.extendedProps.durum === 'Beklemede') {
+                                color = '#facc15';
+                            } else if (e.extendedProps && e.extendedProps.durum === 'IptalEdildi') {
+                                color = '#ef4444';
+                            }
+
+                            return Object.assign({}, e, {
+                                backgroundColor: color,
+                                borderColor: color
+                            });
+                        });
+                        successCallback(mapped);
+                    }).fail(function () {
+                        failureCallback();
+                    });
+                },
+                eventClick: function (info) {
+                    var e = info.event;
+                    var start = e.start;
+                    if (!start) return;
+
+                    var tarih = start.toLocaleDateString('tr-TR');
+                    var saat = start.toTimeString().substring(0, 5);
+                    var durum = e.extendedProps.durum || '';
+
+                    document.getElementById('adminModalDateTime').innerText = tarih + ' ' + saat;
+                    document.getElementById('adminModalPersonel').innerText = e.extendedProps.personel || '';
+                    document.getElementById('adminModalMusteri').innerText = e.extendedProps.musteriId || '';
+                    document.getElementById('adminModalDurum').innerText = durum;
+                    document.getElementById('adminModalUcret').innerText = e.title || '';
+                    
+                    var randevuId = e.id;
+                    document.getElementById('adminModalRandevuId').value = randevuId;
+                    document.getElementById('adminModalRandevuIdIptal').value = randevuId;
+
+                    // Sadece Beklemede durumundaki randevular için onayla/iptal butonlarını göster
+                    var footer = document.getElementById('adminModalFooter');
+                    var onaylaForm = document.getElementById('adminModalOnaylaForm');
+                    var iptalForm = document.getElementById('adminModalIptalForm');
+                    
+                    if (durum === 'Beklemede') {
+                        onaylaForm.style.display = 'inline-block';
+                        iptalForm.style.display = 'inline-block';
+                    } else {
+                        onaylaForm.style.display = 'none';
+                        iptalForm.style.display = 'none';
+                    }
+
+                    var modal = new bootstrap.Modal(document.getElementById('adminRandevuModal'));
+                    modal.show();
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+}
 
 

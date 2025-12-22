@@ -25,6 +25,11 @@ public interface IRandevuServisi
     Task<IReadOnlyList<RandevuDto>> KullaniciRandevulariniGetirAsync(string musteriId);
 
     Task<IReadOnlyList<RandevuDto>> PersonelRandevulariniGetirAsync(int personelId, DateTime? tarih = null);
+
+    /// <summary>
+    /// Tüm randevuları (takvim, raporlama vb. için) getirir.
+    /// </summary>
+    Task<IReadOnlyList<RandevuDto>> TumRandevulariniGetirAsync(DateTime? baslangicTarihi = null, DateTime? bitisTarihi = null);
 }
 
 
