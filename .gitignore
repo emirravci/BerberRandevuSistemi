@@ -1,0 +1,83 @@
+############################
+# Visual Studio
+############################
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+############################
+# Build & Publish
+############################
+bin/
+obj/
+[Bb]uild/
+[Bb]uilds/
+[Dd]ebug*/
+[Rr]elease*/
+publish/
+
+############################
+# .NET Artifacts
+############################
+*.dll
+*.exe
+*.pdb
+*.cache
+*.deps.json
+*.runtimeconfig.json
+
+############################
+# NuGet
+############################
+*.nupkg
+*.snupkg
+.nuget/
+
+############################
+# Logs
+############################
+*.log
+
+############################
+# SQLite / Local DB
+############################
+*.db
+*.db-shm
+*.db-wal
+
+############################
+# OS Files
+############################
+.DS_Store
+Thumbs.db
+desktop.ini
+
+############################
+# IDEs
+############################
+.idea/
+.vscode/
+*.code-workspace
+
+############################
+# Test Results
+############################
+TestResults/
+coverage/
+*.trx
+
+############################
+# ASP.NET
+############################
+appsettings.Development.json
+appsettings.Local.json
+
+############################
+# Temporary / Backup
+############################
+*.tmp
+*.bak
+*.old
+*.orig
