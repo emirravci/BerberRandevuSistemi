@@ -1,0 +1,49 @@
+@model BerberRandevu.Web.Models.Admin.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Yönetim Paneli";
+}
+
+<h2 class="mb-4">Yönetim Paneli</h2>
+
+@if (TempData["Basari"] != null)
+{
+    <div class="alert alert-success">@TempData["Basari"]</div>
+}
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">Bugün</div>
+            <div class="card-body">
+                <p><strong>Gelir:</strong> @Model.BugunGelir.ToString("C")</p>
+                <p><strong>Gider:</strong> @Model.BugunGider.ToString("C")</p>
+                <p><strong>Net:</strong> @Model.BugunNet.ToString("C")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">Bu Ay</div>
+            <div class="card-body">
+                <p><strong>Gelir:</strong> @Model.AyGelir.ToString("C")</p>
+                <p><strong>Gider:</strong> @Model.AyGider.ToString("C")</p>
+                <p><strong>Net:</strong> @Model.AyNet.ToString("C")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-secondary">
+            <div class="card-header bg-secondary text-white">İşlemler</div>
+            <div class="card-body">
+                <a asp-controller="Odeme" asp-action="OdemeAl" class="btn btn-outline-success w-100 mb-2">
+                    <i class="fa-solid fa-cash-register me-1"></i> Ödeme Al
+                </a>
+                <a asp-controller="Gider" asp-action="Index" class="btn btn-outline-danger w-100">
+                    <i class="fa-solid fa-file-invoice-dollar me-1"></i> Giderler
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+

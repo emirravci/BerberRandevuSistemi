@@ -1,0 +1,53 @@
+@model BerberRandevu.Web.Models.Hesap.KayitViewModel
+@{
+    ViewData["Title"] = "Kayıt Ol";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">Yeni Kullanıcı Kaydı</h2>
+
+        <form asp-action="Kayit" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="AdSoyad" class="form-label"></label>
+                <input asp-for="AdSoyad" class="form-control" />
+                <span asp-validation-for="AdSoyad" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Eposta" class="form-label"></label>
+                <input asp-for="Eposta" class="form-control" />
+                <span asp-validation-for="Eposta" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Sifre" class="form-label"></label>
+                <input asp-for="Sifre" class="form-control" />
+                <span asp-validation-for="Sifre" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SifreTekrar" class="form-label"></label>
+                <input asp-for="SifreTekrar" class="form-control" />
+                <span asp-validation-for="SifreTekrar" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">
+                <i class="fa-solid fa-user-plus me-1"></i> Kayıt Ol
+            </button>
+        </form>
+
+        <p class="mt-3 text-center">
+            Zaten hesabınız var mı?
+            <a asp-action="Giris">Giriş yapın</a>
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+

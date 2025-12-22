@@ -1,0 +1,61 @@
+@model IReadOnlyList<BerberRandevu.Application.DTOlar.GiderDto>
+@{
+    ViewData["Title"] = "Giderler";
+}
+
+<h2 class="mb-3">Giderler</h2>
+
+@if (TempData["Basari"] != null)
+{
+    <div class="alert alert-success">@TempData["Basari"]</div>
+}
+
+<div class="mb-3">
+    <a asp-action="Ekle" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Yeni Gider
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Son 1 ay içerisinde gider kaydı bulunmuyor.</div>
+}
+else
+{
+    <table class="table table-striped table-bordered align-middle">
+        <thead class="table-light">
+        <tr>
+            <th>Tarih</th>
+            <th>Başlık</th>
+            <th>Tutar</th>
+            <th>Açıklama</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Tarih.ToShortDateString()</td>
+                <td>@item.Baslik</td>
+                <td>@item.Tutar.ToString("C")</td>
+                <td>@item.Aciklama</td>
+                <td class="text-end">
+                    <a asp-action="Duzenle" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1">
+                        <i class="fa-solid fa-pen"></i>
+                    </a>
+                    <form asp-action="Sil" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Bu gider kaydını silmek istediğinize emin misiniz?');">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+

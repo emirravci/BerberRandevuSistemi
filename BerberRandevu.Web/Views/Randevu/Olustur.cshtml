@@ -1,0 +1,55 @@
+@model BerberRandevu.Web.Models.Randevu.RandevuOlusturViewModel
+@{
+    ViewData["Title"] = "Randevu Al";
+}
+
+<h2 class="mb-4">Randevu Al</h2>
+
+@if (TempData["Hata"] != null)
+{
+    <div class="alert alert-danger">@TempData["Hata"]</div>
+}
+
+<form asp-action="Olustur" method="post" class="row g-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-md-4">
+        <label asp-for="PersonelId" class="form-label"></label>
+        <select asp-for="PersonelId" class="form-select"
+                asp-items="@(new SelectList(Model.Personeller, nameof(BerberRandevu.Application.DTOlar.PersonelDto.Id), nameof(BerberRandevu.Application.DTOlar.PersonelDto.Ad)))">
+            <option value="">Personel seçiniz</option>
+        </select>
+        <span asp-validation-for="PersonelId" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Tarih" class="form-label"></label>
+        <input asp-for="Tarih" class="form-control" />
+        <span asp-validation-for="Tarih" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Saat" class="form-label"></label>
+        <input asp-for="Saat" class="form-control" />
+        <span asp-validation-for="Saat" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Ucret" class="form-label"></label>
+        <input asp-for="Ucret" class="form-control" />
+        <span asp-validation-for="Ucret" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-calendar-plus me-1"></i> Randevu Oluştur
+        </button>
+        <a asp-action="BenimRandevularim" class="btn btn-outline-secondary ms-2">Randevularım</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+

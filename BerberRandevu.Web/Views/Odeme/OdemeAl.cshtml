@@ -1,0 +1,40 @@
+@model BerberRandevu.Web.Models.Odeme.OdemeAlViewModel
+@{
+    ViewData["Title"] = "Ödeme Al";
+}
+
+<h2 class="mb-3">Ödeme Al</h2>
+
+<form asp-action="OdemeAl" method="post" class="row g-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-md-4">
+        <label asp-for="RandevuId" class="form-label"></label>
+        <input asp-for="RandevuId" class="form-control" />
+        <span asp-validation-for="RandevuId" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Tutar" class="form-label"></label>
+        <input asp-for="Tutar" class="form-control" />
+        <span asp-validation-for="Tutar" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="OdemeTipi" class="form-label"></label>
+        <input asp-for="OdemeTipi" class="form-control" />
+        <span asp-validation-for="OdemeTipi" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-success">
+            <i class="fa-solid fa-cash-register me-1"></i> Ödeme Al
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+
