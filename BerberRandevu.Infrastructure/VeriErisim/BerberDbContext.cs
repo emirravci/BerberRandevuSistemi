@@ -20,6 +20,7 @@ public class BerberDbContext : IdentityDbContext<UygulamaKullanicisi>
     public DbSet<Randevu> Randevular => Set<Randevu>();
     public DbSet<Odeme> Odemeler => Set<Odeme>();
     public DbSet<Gider> Giderler => Set<Gider>();
+    public DbSet<Hizmet> Hizmetler => Set<Hizmet>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -48,6 +49,13 @@ public class BerberDbContext : IdentityDbContext<UygulamaKullanicisi>
             b.HasOne(cs => cs.Personel)
                 .WithMany(p => p.CalismaSaatleri)
                 .HasForeignKey(cs => cs.PersonelId);
+        });
+
+        builder.Entity<Hizmet>(b =>
+        {
+            b.Property(x => x.Ad).IsRequired().HasMaxLength(100);
+            b.Property(x => x.Sure).IsRequired();
+            b.Property(x => x.Ucret).HasColumnType("decimal(18,2)").IsRequired();
         });
     }
 }

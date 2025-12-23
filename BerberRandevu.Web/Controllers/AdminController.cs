@@ -1,4 +1,5 @@
 using BerberRandevu.Application.Arayuzler.Servisler;
+using BerberRandevu.Application.DTOlar;
 using BerberRandevu.Domain.Kullanicilar;
 using BerberRandevu.Web.Models.Admin;
 using Microsoft.AspNetCore.Authorization;
@@ -17,21 +18,27 @@ public class AdminController : Controller
     private readonly IOdemeServisi _odemeServisi;
     private readonly IGiderServisi _giderServisi;
     private readonly IRandevuServisi _randevuServisi;
-    private readonly UserManager<UygulamaKullanicisi> _userManager;
+    private readonly IPersonelServisi _personelServisi;
+    private readonly IHizmetServisi _hizmetServisi;
+  private readonly UserManager<UygulamaKullanicisi> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
 
     public AdminController(
-        IOdemeServisi odemeServisi,
+      IOdemeServisi odemeServisi,
         IGiderServisi giderServisi,
         IRandevuServisi randevuServisi,
+        IPersonelServisi personelServisi,
+        IHizmetServisi hizmetServisi,
         UserManager<UygulamaKullanicisi> userManager,
         RoleManager<IdentityRole> roleManager)
     {
         _odemeServisi = odemeServisi;
         _giderServisi = giderServisi;
         _randevuServisi = randevuServisi;
+_personelServisi = personelServisi;
+        _hizmetServisi = hizmetServisi;
         _userManager = userManager;
-        _roleManager = roleManager;
+ _roleManager = roleManager;
     }
 
     [HttpGet]
@@ -190,6 +197,326 @@ public class AdminController : Controller
 
         return Json(events);
     }
+
+    #region Personel Yönetimi
+
+  [HttpGet]
+    public async Task<IActionResult> Personeller()
+    {
+     var personeller = await _personelServisi.TumPersonelleriGetirAsync();
+        var items = new List<PersonelListeItemViewModel>();
+
+        foreach (var p in personeller)
+        {
+     var kullanici = await _userManager.FindByIdAsync(p.KullaniciId);
+      items.Add(new PersonelListeItemViewModel
+     {
+             Id = p.Id,
+         Ad = p.Ad,
+    Soyad = p.Soyad,
+          KullaniciId = p.KullaniciId,
+      KullaniciEposta = kullanici?.Email,
+      AktifMi = p.AktifMi
+   });
+     }
+
+        return View(items);
+    }
+
+    [HttpGet]
+ public async Task<IActionResult> PersonelEkle()
+    {
+        var model = new PersonelDuzenleViewModel();
+        await KullaniciListesiniDoldur(model);
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> PersonelEkle(PersonelDuzenleViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            await KullaniciListesiniDoldur(model);
+            return View(model);
+     }
+
+        try
+        {
+            // Seçilen kullanıcının bilgilerini al
+         var kullanici = await _userManager.FindByIdAsync(model.KullaniciId);
+            if (kullanici == null)
+      {
+            ModelState.AddModelError(string.Empty, "Seçilen kullanıcı bulunamadı.");
+   await KullaniciListesiniDoldur(model);
+              return View(model);
+     }
+
+    var dto = new PersonelDto
+            {
+Ad = model.Ad,
+   Soyad = model.Soyad,
+         KullaniciId = model.KullaniciId,
+    AktifMi = model.AktifMi
+   };
+
+            await _personelServisi.PersonelEkleAsync(dto);
+  TempData["Basari"] = "Personel başarıyla eklendi.";
+       return RedirectToAction(nameof(Personeller));
+        }
+        catch (Exception ex)
+ {
+        ModelState.AddModelError(string.Empty, $"Hata: {ex.Message}");
+            await KullaniciListesiniDoldur(model);
+            return View(model);
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> PersonelDuzenle(int id)
+    {
+        var personel = await _personelServisi.PersonelGetirAsync(id);
+   if (personel == null)
+            return NotFound();
+
+   var vm = new PersonelDuzenleViewModel
+     {
+     Id = personel.Id,
+  Ad = personel.Ad,
+  Soyad = personel.Soyad,
+            KullaniciId = personel.KullaniciId,
+     AktifMi = personel.AktifMi
+        };
+
+   await KullaniciListesiniDoldur(vm);
+        return View(vm);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> PersonelDuzenle(PersonelDuzenleViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+     await KullaniciListesiniDoldur(model);
+    return View(model);
+        }
+
+        try
+  {
+         // Seçilen kullanıcının bilgilerini al
+         var kullanici = await _userManager.FindByIdAsync(model.KullaniciId);
+    if (kullanici == null)
+            {
+    ModelState.AddModelError(string.Empty, "Seçilen kullanıcı bulunamadı.");
+            await KullaniciListesiniDoldur(model);
+       return View(model);
+      }
+
+            var dto = new PersonelDto
+     {
+                Id = model.Id,
+    Ad = model.Ad,
+        Soyad = model.Soyad,
+                KullaniciId = model.KullaniciId,
+                AktifMi = model.AktifMi
+            };
+
+            await _personelServisi.PersonelGuncelleAsync(dto);
+   TempData["Basari"] = "Personel başarıyla güncellendi.";
+            return RedirectToAction(nameof(Personeller));
+      }
+        catch (Exception ex)
+        {
+  ModelState.AddModelError(string.Empty, $"Hata: {ex.Message}");
+      await KullaniciListesiniDoldur(model);
+         return View(model);
+  }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> PersonelSil(int id)
+    {
+        try
+        {
+        await _personelServisi.PersonelSilAsync(id);
+  TempData["Basari"] = "Personel başarıyla silindi.";
+        }
+        catch (Exception ex)
+        {
+    TempData["Hata"] = $"Personel silinemedi: {ex.Message}";
+        }
+
+        return RedirectToAction(nameof(Personeller));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> PersonelAktiflikDegistir(int id)
+    {
+ var personel = await _personelServisi.PersonelGetirAsync(id);
+        if (personel == null)
+            return NotFound();
+
+        personel.AktifMi = !personel.AktifMi;
+        await _personelServisi.PersonelGuncelleAsync(personel);
+
+      TempData["Basari"] = "Personel durumu güncellendi.";
+     return RedirectToAction(nameof(Personeller));
+    }
+
+    /// <summary>
+    /// Kullanıcı dropdown listesini doldurur
+  /// </summary>
+  private async Task KullaniciListesiniDoldur(PersonelDuzenleViewModel model)
+    {
+        var tumKullanicilar = await _userManager.Users
+    .Where(u => u.AktifMi)
+      .OrderBy(u => u.AdSoyad)
+            .ToListAsync();
+
+        model.KullaniciListesi = tumKullanicilar.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+  {
+          Value = u.Id,
+      Text = $"{u.AdSoyad} ({u.Email})"
+        }).ToList();
+
+        // Başta boş seçenek ekle
+        model.KullaniciListesi.Insert(0, new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+{
+   Value = "",
+            Text = "-- Kullanıcı Seçiniz --"
+        });
+    }
+
+    #endregion
+
+    #region Hizmet Yönetimi
+
+    [HttpGet]
+    public async Task<IActionResult> Hizmetler()
+    {
+      var hizmetler = await _hizmetServisi.TumHizmetleriGetirAsync();
+   var items = hizmetler.Select(h => new HizmetListeItemViewModel
+        {
+            Id = h.Id,
+  Ad = h.Ad,
+       Sure = h.Sure,
+      Ucret = h.Ucret,
+    AktifMi = h.AktifMi
+   }).ToList();
+
+        return View(items);
+    }
+
+    [HttpGet]
+    public IActionResult HizmetEkle()
+    {
+        return View(new HizmetDuzenleViewModel());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> HizmetEkle(HizmetDuzenleViewModel model)
+    {
+        if (!ModelState.IsValid)
+    return View(model);
+
+        try
+ {
+            var dto = new HizmetDto
+   {
+        Ad = model.Ad,
+   Sure = model.Sure,
+       Ucret = model.Ucret,
+     AktifMi = model.AktifMi
+            };
+
+       await _hizmetServisi.HizmetEkleAsync(dto);
+  TempData["Basari"] = "Hizmet başarıyla eklendi.";
+   return RedirectToAction(nameof(Hizmetler));
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, $"Hata: {ex.Message}");
+         return View(model);
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> HizmetDuzenle(int id)
+    {
+        var hizmet = await _hizmetServisi.HizmetGetirAsync(id);
+   if (hizmet == null)
+   return NotFound();
+
+        var vm = new HizmetDuzenleViewModel
+     {
+            Id = hizmet.Id,
+     Ad = hizmet.Ad,
+   Sure = hizmet.Sure,
+      Ucret = hizmet.Ucret,
+   AktifMi = hizmet.AktifMi
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> HizmetDuzenle(HizmetDuzenleViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        try
+     {
+    var dto = new HizmetDto
+            {
+       Id = model.Id,
+    Ad = model.Ad,
+          Sure = model.Sure,
+       Ucret = model.Ucret,
+        AktifMi = model.AktifMi
+          };
+
+            await _hizmetServisi.HizmetGuncelleAsync(dto);
+       TempData["Basari"] = "Hizmet başarıyla güncellendi.";
+          return RedirectToAction(nameof(Hizmetler));
+        }
+        catch (Exception ex)
+        {
+     ModelState.AddModelError(string.Empty, $"Hata: {ex.Message}");
+            return View(model);
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> HizmetSil(int id)
+    {
+     try
+        {
+         await _hizmetServisi.HizmetSilAsync(id);
+      TempData["Basari"] = "Hizmet başarıyla silindi.";
+        }
+      catch (Exception ex)
+     {
+            TempData["Hata"] = $"Hizmet silinemedi: {ex.Message}";
+      }
+
+  return RedirectToAction(nameof(Hizmetler));
+}
+
+    [HttpPost]
+    public async Task<IActionResult> HizmetAktiflikDegistir(int id)
+    {
+    var hizmet = await _hizmetServisi.HizmetGetirAsync(id);
+        if (hizmet == null)
+            return NotFound();
+
+        hizmet.AktifMi = !hizmet.AktifMi;
+        await _hizmetServisi.HizmetGuncelleAsync(hizmet);
+
+        TempData["Basari"] = "Hizmet durumu güncellendi.";
+   return RedirectToAction(nameof(Hizmetler));
+    }
+
+    #endregion
 }
 
 

@@ -32,6 +32,7 @@ builder.Services.AddScoped<IRandevuServisi, RandevuServisi>();
 builder.Services.AddScoped<IPersonelServisi, PersonelServisi>();
 builder.Services.AddScoped<IOdemeServisi, OdemeServisi>();
 builder.Services.AddScoped<IGiderServisi, GiderServisi>();
+builder.Services.AddScoped<IHizmetServisi, HizmetServisi>();
 
 builder.Services.AddScoped<IRandevuRepository, RandevuRepository>();
 builder.Services.AddScoped<IPersonelRepository, PersonelRepository>();

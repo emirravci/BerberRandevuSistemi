@@ -1,0 +1,91 @@
+@model BerberRandevu.Web.Models.Admin.PersonelDuzenleViewModel
+
+@{
+    ViewData["Title"] = "Yeni Personel Ekle";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+   <div class="mb-4">
+        <a asp-action="Personeller" class="btn btn-outline-secondary btn-sm">
+    <i class="fa-solid fa-arrow-left me-1"></i> Geri
+    </a>
+    </div>
+
+    <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+   <h4 class="mb-0">
+        <i class="fa-solid fa-user-plus me-2"></i>Yeni Personel Ekle
+      </h4>
+    </div>
+              <div class="card-body p-4">
+     <form asp-action="PersonelEkle" method="post">
+  <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+<div class="mb-3">
+   <label asp-for="KullaniciId" class="form-label">
+        <i class="fa-solid fa-user-circle me-1"></i>Kullanýcý Seçimi
+       </label>
+   <select asp-for="KullaniciId" asp-items="Model.KullaniciListesi" 
+        class="form-select" id="kullaniciSelect">
+    </select>
+ <span asp-validation-for="KullaniciId" class="text-danger small"></span>
+    <div class="form-text">
+   <i class="fa-solid fa-info-circle me-1"></i>
+     Personel olarak atanacak kullanýcýyý seçiniz.
+      </div>
+       </div>
+
+     <div class="mb-3">
+          <label asp-for="Ad" class="form-label">
+<i class="fa-solid fa-user me-1"></i>Ad
+   </label>
+<input asp-for="Ad" class="form-control" placeholder="Personel adý" />
+      <span asp-validation-for="Ad" class="text-danger small"></span>
+   </div>
+
+           <div class="mb-3">
+       <label asp-for="Soyad" class="form-label">
+  <i class="fa-solid fa-user me-1"></i>Soyad
+  </label>
+  <input asp-for="Soyad" class="form-control" placeholder="Personel soyadý" />
+     <span asp-validation-for="Soyad" class="text-danger small"></span>
+   </div>
+
+     <div class="mb-4">
+  <div class="form-check form-switch">
+   <input asp-for="AktifMi" class="form-check-input" type="checkbox" role="switch" />
+  <label asp-for="AktifMi" class="form-check-label">
+      <i class="fa-solid fa-toggle-on me-1"></i>Aktif
+   </label>
+         </div>
+     <div class="form-text">
+       Pasif personeller randevu alamaz.
+    </div>
+        </div>
+
+   <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <a asp-action="Personeller" class="btn btn-secondary">
+    <i class="fa-solid fa-times me-1"></i>Ýptal
+   </a>
+      <button type="submit" class="btn btn-primary">
+       <i class="fa-solid fa-save me-1"></i>Kaydet
+     </button>
+      </div>
+  </form>
+             </div>
+            </div>
+
+    <div class="alert alert-info mt-3">
+<i class="fa-solid fa-lightbulb me-2"></i>
+   <strong>Ýpucu:</strong> Kullanýcý listesinden seçim yaparak personel kaydý oluþturabilirsiniz. 
+       Personel bilgileri (Ad ve Soyad) ayrýca saklanýr.
+   </div>
+   </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

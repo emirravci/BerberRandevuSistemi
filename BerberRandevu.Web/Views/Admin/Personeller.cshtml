@@ -1,0 +1,170 @@
+@model List<BerberRandevu.Web.Models.Admin.PersonelListeItemViewModel>
+
+@{
+ ViewData["Title"] = "Personel Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fa-solid fa-users-gear me-2"></i>Personel Yönetimi</h2>
+        <a asp-action="PersonelEkle" class="btn btn-primary">
+  <i class="fa-solid fa-plus me-1"></i> Yeni Personel Ekle
+    </a>
+    </div>
+
+    @if (TempData["Basari"] != null)
+    {
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="fa-solid fa-circle-check me-2"></i>@TempData["Basari"]
+ <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Hata"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>@TempData["Hata"]
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+    @if (Model == null || !Model.Any())
+    {
+                <div class="text-center py-5">
+         <i class="fa-solid fa-users fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Henüz personel kaydý bulunmamaktadýr.</p>
+    <a asp-action="PersonelEkle" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Ýlk Personeli Ekle
+         </a>
+      </div>
+            }
+ else
+            {
+          <div class="table-responsive">
+     <table class="table table-hover align-middle">
+       <thead class="table-light">
+     <tr>
+          <th>ID</th>
+   <th>Ad Soyad</th>
+            <th>Kullanýcý</th>
+      <th class="text-center">Durum</th>
+       <th class="text-end">Ýþlemler</th>
+       </tr>
+            </thead>
+                <tbody>
+     @foreach (var personel in Model)
+       {
+   <tr>
+              <td class="fw-bold text-muted">#@personel.Id</td>
+            <td>
+    <div class="d-flex align-items-center">
+      <div class="avatar-circle me-2">
+           <i class="fa-solid fa-user"></i>
+             </div>
+           <div>
+   <div class="fw-semibold">@personel.AdSoyad</div>
+         </div>
+     </div>
+            </td>
+              <td>
+<div>
+        @if (!string.IsNullOrEmpty(personel.KullaniciEposta))
+                 {
+              <div class="small text-muted">
+  <i class="fa-solid fa-envelope me-1"></i>@personel.KullaniciEposta
+       </div>
+           }
+       <div class="small">
+            <span class="badge bg-secondary">ID: @personel.KullaniciId.Substring(0, Math.Min(8, personel.KullaniciId.Length))</span>
+    </div>
+                </div>
+             </td>
+      <td class="text-center">
+      @if (personel.AktifMi)
+      {
+   <span class="badge bg-success">
+        <i class="fa-solid fa-check me-1"></i>Aktif
+    </span>
+       }
+    else
+       {
+        <span class="badge bg-danger">
+ <i class="fa-solid fa-times me-1"></i>Pasif
+        </span>
+    }
+       </td>
+ <td class="text-end">
+<div class="btn-group" role="group">
+      <a asp-action="PersonelDuzenle" asp-route-id="@personel.Id" 
+       class="btn btn-sm btn-outline-primary" title="Düzenle">
+ <i class="fa-solid fa-pen-to-square"></i>
+         </a>
+      
+     <form asp-action="PersonelAktiflikDegistir" asp-route-id="@personel.Id" 
+      method="post" class="d-inline">
+  <button type="submit" class="btn btn-sm btn-outline-warning" 
+  title="@(personel.AktifMi ? "Pasif Yap" : "Aktif Yap")">
+         <i class="fa-solid fa-@(personel.AktifMi ? "toggle-on" : "toggle-off")"></i>
+  </button>
+           </form>
+
+   <button type="button" class="btn btn-sm btn-outline-danger" 
+      data-bs-toggle="modal" 
+         data-bs-target="#silModal@(personel.Id)"
+      title="Sil">
+            <i class="fa-solid fa-trash"></i>
+    </button>
+     </div>
+
+       <!-- Silme Onay Modal -->
+            <div class="modal fade" id="silModal@(personel.Id)" tabindex="-1">
+     <div class="modal-dialog">
+      <div class="modal-content">
+       <div class="modal-header">
+       <h5 class="modal-title">Personel Sil</h5>
+       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+       </div>
+     <div class="modal-body">
+               <p><strong>@personel.AdSoyad</strong> adlý personeli silmek istediðinize emin misiniz?</p>
+      <p class="text-danger">
+        <i class="fa-solid fa-triangle-exclamation me-1"></i>
+            Bu iþlem geri alýnamaz!
+           </p>
+      </div>
+          <div class="modal-footer">
+       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ýptal</button>
+    <form asp-action="PersonelSil" asp-route-id="@personel.Id" method="post" class="d-inline">
+                   <button type="submit" class="btn btn-danger">
+       <i class="fa-solid fa-trash me-1"></i>Sil
+</button>
+       </form>
+          </div>
+   </div>
+</div>
+             </div>
+    </td>
+   </tr>
+         }
+     </tbody>
+         </table>
+         </div>
+    }
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+  color: white;
+        font-size: 1.1rem;
+    }
+</style>

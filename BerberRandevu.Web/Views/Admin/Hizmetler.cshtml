@@ -1,0 +1,168 @@
+@model List<BerberRandevu.Web.Models.Admin.HizmetListeItemViewModel>
+
+@{
+ ViewData["Title"] = "Hizmet Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+  <h2><i class="fa-solid fa-scissors me-2"></i>Hizmet Yönetimi</h2>
+        <a asp-action="HizmetEkle" class="btn btn-primary">
+   <i class="fa-solid fa-plus me-1"></i> Yeni Hizmet Ekle
+        </a>
+</div>
+
+    @if (TempData["Basari"] != null)
+    {
+   <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="fa-solid fa-circle-check me-2"></i>@TempData["Basari"]
+<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+     </div>
+    }
+
+    @if (TempData["Hata"] != null)
+    {
+     <div class="alert alert-danger alert-dismissible fade show" role="alert">
+<i class="fa-solid fa-circle-exclamation me-2"></i>@TempData["Hata"]
+<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+}
+
+  <div class="card shadow-sm">
+        <div class="card-body">
+     @if (Model == null || !Model.Any())
+      {
+       <div class="text-center py-5">
+   <i class="fa-solid fa-scissors fa-3x text-muted mb-3"></i>
+  <p class="text-muted">Henüz hizmet kaydý bulunmamaktadýr.</p>
+       <a asp-action="HizmetEkle" class="btn btn-primary">
+  <i class="fa-solid fa-plus me-1"></i> Ýlk Hizmeti Ekle
+   </a>
+       </div>
+            }
+   else
+         {
+      <div class="table-responsive">
+   <table class="table table-hover align-middle">
+         <thead class="table-light">
+         <tr>
+     <th>ID</th>
+     <th>Hizmet Adý</th>
+<th class="text-center">Süre</th>
+   <th class="text-end">Ücret</th>
+     <th class="text-center">Durum</th>
+        <th class="text-end">Ýþlemler</th>
+          </tr>
+  </thead>
+      <tbody>
+    @foreach (var hizmet in Model)
+      {
+    <tr>
+        <td class="fw-bold text-muted">#@hizmet.Id</td>
+  <td>
+       <div class="d-flex align-items-center">
+ <div class="service-icon me-2">
+        <i class="fa-solid fa-scissors"></i>
+  </div>
+        <div>
+    <div class="fw-semibold">@hizmet.Ad</div>
+       </div>
+        </div>
+ </td>
+  <td class="text-center">
+    <span class="badge bg-info">
+  <i class="fa-solid fa-clock me-1"></i>@hizmet.SureText
+     </span>
+    </td>
+     <td class="text-end">
+  <span class="fw-bold text-success">
+    <i class="fa-solid fa-turkish-lira-sign me-1"></i>@hizmet.Ucret.ToString("N2")
+    </span>
+               </td>
+         <td class="text-center">
+   @if (hizmet.AktifMi)
+   {
+      <span class="badge bg-success">
+     <i class="fa-solid fa-check me-1"></i>Aktif
+      </span>
+}
+         else
+    {
+   <span class="badge bg-danger">
+     <i class="fa-solid fa-times me-1"></i>Pasif
+     </span>
+ }
+ </td>
+      <td class="text-end">
+         <div class="btn-group" role="group">
+   <a asp-action="HizmetDuzenle" asp-route-id="@hizmet.Id" 
+      class="btn btn-sm btn-outline-primary" title="Düzenle">
+     <i class="fa-solid fa-pen-to-square"></i>
+   </a>
+         
+ <form asp-action="HizmetAktiflikDegistir" asp-route-id="@hizmet.Id" 
+  method="post" class="d-inline">
+  <button type="submit" class="btn btn-sm btn-outline-warning" 
+        title="@(hizmet.AktifMi ? "Pasif Yap" : "Aktif Yap")">
+     <i class="fa-solid fa-@(hizmet.AktifMi ? "toggle-on" : "toggle-off")"></i>
+  </button>
+ </form>
+
+      <button type="button" class="btn btn-sm btn-outline-danger" 
+         data-bs-toggle="modal" 
+       data-bs-target="#silModal@(hizmet.Id)"
+     title="Sil">
+        <i class="fa-solid fa-trash"></i>
+</button>
+         </div>
+
+   <!-- Silme Onay Modal -->
+       <div class="modal fade" id="silModal@(hizmet.Id)" tabindex="-1">
+     <div class="modal-dialog">
+  <div class="modal-content">
+     <div class="modal-header">
+           <h5 class="modal-title">Hizmet Sil</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+   <div class="modal-body">
+       <p><strong>@hizmet.Ad</strong> hizmetini silmek istediðinize emin misiniz?</p>
+       <p class="text-danger">
+       <i class="fa-solid fa-triangle-exclamation me-1"></i>
+      Bu iþlem geri alýnamaz!
+     </p>
+  </div>
+   <div class="modal-footer">
+     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ýptal</button>
+          <form asp-action="HizmetSil" asp-route-id="@hizmet.Id" method="post" class="d-inline">
+        <button type="submit" class="btn btn-danger">
+     <i class="fa-solid fa-trash me-1"></i>Sil
+     </button>
+           </form>
+            </div>
+       </div>
+         </div>
+ </div>
+    </td>
+       </tr>
+     }
+      </tbody>
+ </table>
+     </div>
+  }
+      </div>
+    </div>
+</div>
+
+<style>
+    .service-icon {
+     width: 40px;
+        height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+     display: flex;
+  align-items: center;
+ justify-content: center;
+     color: white;
+        font-size: 1.1rem;
+ }
+</style>
