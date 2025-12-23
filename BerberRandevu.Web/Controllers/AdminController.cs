@@ -20,7 +20,8 @@ public class AdminController : Controller
     private readonly IRandevuServisi _randevuServisi;
     private readonly IPersonelServisi _personelServisi;
     private readonly IHizmetServisi _hizmetServisi;
-  private readonly UserManager<UygulamaKullanicisi> _userManager;
+    private readonly ISalonAyarlariServisi _salonAyarlariServisi;
+    private readonly UserManager<UygulamaKullanicisi> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
 
     public AdminController(
@@ -29,6 +30,7 @@ public class AdminController : Controller
         IRandevuServisi randevuServisi,
         IPersonelServisi personelServisi,
         IHizmetServisi hizmetServisi,
+        ISalonAyarlariServisi salonAyarlariServisi,
         UserManager<UygulamaKullanicisi> userManager,
         RoleManager<IdentityRole> roleManager)
     {
@@ -37,6 +39,7 @@ public class AdminController : Controller
         _randevuServisi = randevuServisi;
 _personelServisi = personelServisi;
         _hizmetServisi = hizmetServisi;
+   _salonAyarlariServisi = salonAyarlariServisi;
         _userManager = userManager;
  _roleManager = roleManager;
     }
@@ -514,6 +517,57 @@ Ad = model.Ad,
 
         TempData["Basari"] = "Hizmet durumu güncellendi.";
    return RedirectToAction(nameof(Hizmetler));
+    }
+
+    #endregion
+
+    #region Salon Ayarları
+
+    [HttpGet]
+    public async Task<IActionResult> CalismaSaatleri()
+  {
+        var ayarlar = await _salonAyarlariServisi.CalismaSaatleriAyarlariniGetirAsync();
+  
+  var vm = new CalismaSaatleriAyarViewModel
+        {
+    BaslangicSaati = ayarlar.BaslangicSaati,
+          BitisSaati = ayarlar.BitisSaati,
+RandevuDilimiDakika = ayarlar.RandevuDilimiDakika
+ };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CalismaSaatleri(CalismaSaatleriAyarViewModel model)
+    {
+      if (!ModelState.IsValid)
+   return View(model);
+
+        if (model.BitisSaati <= model.BaslangicSaati)
+        {
+            ModelState.AddModelError(string.Empty, "Bitiş saati başlangıç saatinden sonra olmalıdır.");
+      return View(model);
+        }
+
+        try
+        {
+       var dto = new CalismaSaatleriAyarDto
+            {
+       BaslangicSaati = model.BaslangicSaati,
+           BitisSaati = model.BitisSaati,
+        RandevuDilimiDakika = model.RandevuDilimiDakika
+        };
+
+            await _salonAyarlariServisi.CalismaSaatleriAyarlariniKaydetAsync(dto);
+     TempData["Basari"] = "Çalışma saatleri ayarları başarıyla kaydedildi.";
+          return RedirectToAction(nameof(CalismaSaatleri));
+   }
+catch (Exception ex)
+ {
+            ModelState.AddModelError(string.Empty, $"Hata: {ex.Message}");
+      return View(model);
+        }
     }
 
     #endregion

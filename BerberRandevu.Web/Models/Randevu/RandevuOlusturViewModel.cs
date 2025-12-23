@@ -5,9 +5,13 @@ namespace BerberRandevu.Web.Models.Randevu;
 
 public class RandevuOlusturViewModel
 {
-    [Required]
+    [Required(ErrorMessage = "Personel seçimi zorunludur.")]
     [Display(Name = "Personel")]
     public int PersonelId { get; set; }
+
+    [Required(ErrorMessage = "Hizmet seçimi zorunludur.")]
+    [Display(Name = "Hizmet")]
+    public int HizmetId { get; set; }
 
     [Required]
     [DataType(DataType.Date)]
@@ -19,11 +23,11 @@ public class RandevuOlusturViewModel
     [Display(Name = "Saat")]
     public TimeSpan Saat { get; set; }
 
-    [Required]
     [Display(Name = "Ücret")]
     public decimal Ucret { get; set; }
 
     public List<PersonelDto> Personeller { get; set; } = new();
+    public List<HizmetDto> Hizmetler { get; set; } = new();
 }
 
 

@@ -21,6 +21,7 @@ public class BerberDbContext : IdentityDbContext<UygulamaKullanicisi>
     public DbSet<Odeme> Odemeler => Set<Odeme>();
     public DbSet<Gider> Giderler => Set<Gider>();
     public DbSet<Hizmet> Hizmetler => Set<Hizmet>();
+    public DbSet<SalonAyarlari> SalonAyarlari => Set<SalonAyarlari>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -56,6 +57,13 @@ public class BerberDbContext : IdentityDbContext<UygulamaKullanicisi>
             b.Property(x => x.Ad).IsRequired().HasMaxLength(100);
             b.Property(x => x.Sure).IsRequired();
             b.Property(x => x.Ucret).HasColumnType("decimal(18,2)").IsRequired();
+        });
+
+        builder.Entity<SalonAyarlari>(b =>
+        {
+            b.Property(x => x.Anahtar).IsRequired().HasMaxLength(100);
+            b.Property(x => x.Deger).IsRequired().HasMaxLength(500);
+            b.HasIndex(x => x.Anahtar).IsUnique();
         });
     }
 }

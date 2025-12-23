@@ -22,6 +22,7 @@ public class GenelProfil : Profile
         CreateMap<Odeme, OdemeDto>().ReverseMap();
         CreateMap<Gider, GiderDto>().ReverseMap();
         CreateMap<Hizmet, HizmetDto>().ReverseMap();
+        CreateMap<SalonAyarlari, SalonAyarlariDto>().ReverseMap();
     }
 }
 

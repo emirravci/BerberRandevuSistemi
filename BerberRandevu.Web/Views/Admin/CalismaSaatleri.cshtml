@@ -1,0 +1,205 @@
+@model BerberRandevu.Web.Models.Admin.CalismaSaatleriAyarViewModel
+
+@{
+    ViewData["Title"] = "Çalýþma Saatleri Ayarlarý";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+   <h2><i class="fa-solid fa-clock me-2"></i>Çalýþma Saatleri Ayarlarý</h2>
+    </div>
+
+    @if (TempData["Basari"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+       <i class="fa-solid fa-circle-check me-2"></i>@TempData["Basari"]
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+  <div class="card shadow-sm">
+     <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">
+      <i class="fa-solid fa-cog me-2"></i>Salon Çalýþma Saatleri ve Randevu Ayarlarý
+     </h5>
+    </div>
+     <div class="card-body p-4">
+               <div class="alert alert-info">
+           <i class="fa-solid fa-info-circle me-2"></i>
+        <strong>Bilgi:</strong> Bu ayarlar tüm salon için geçerlidir. Çalýþma saatleri dýþýnda randevu alýnamaz.
+   </div>
+
+            <form asp-action="CalismaSaatleri" method="post">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row">
+          <div class="col-md-6">
+    <div class="mb-4">
+  <label asp-for="BaslangicSaati" class="form-label fw-semibold">
+       <i class="fa-solid fa-sun me-1 text-warning"></i>
+Çalýþma Baþlangýç Saati
+      </label>
+         <input asp-for="BaslangicSaati" type="time" class="form-control form-control-lg" />
+ <span asp-validation-for="BaslangicSaati" class="text-danger small"></span>
+     <div class="form-text">
+    Örn: 09:00 - Salon açýlýþ saati
+ </div>
+     </div>
+  </div>
+
+      <div class="col-md-6">
+         <div class="mb-4">
+           <label asp-for="BitisSaati" class="form-label fw-semibold">
+            <i class="fa-solid fa-moon me-1 text-info"></i>
+        Çalýþma Bitiþ Saati
+       </label>
+       <input asp-for="BitisSaati" type="time" class="form-control form-control-lg" />
+          <span asp-validation-for="BitisSaati" class="text-danger small"></span>
+        <div class="form-text">
+    Örn: 20:00 - Salon kapanýþ saati
+      </div>
+   </div>
+    </div>
+    </div>
+
+       <div class="mb-4">
+     <label asp-for="RandevuDilimiDakika" class="form-label fw-semibold">
+     <i class="fa-solid fa-calendar-days me-1 text-success"></i>
+  Randevu Zaman Dilimi
+   </label>
+    <div class="row">
+ <div class="col-md-6">
+    <input asp-for="RandevuDilimiDakika" type="number" class="form-control form-control-lg" 
+         min="5" max="120" step="5" />
+         <span asp-validation-for="RandevuDilimiDakika" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+<select class="form-select form-control-lg" id="dilimiSec" onchange="document.getElementById('RandevuDilimiDakika').value = this.value;">
+     <option value="">Hýzlý Seçim</option>
+   <option value="10">10 Dakika</option>
+       <option value="15">15 Dakika</option>
+   <option value="20">20 Dakika</option>
+       <option value="30" selected>30 Dakika</option>
+       <option value="45">45 Dakika</option>
+  <option value="60">60 Dakika (1 Saat)</option>
+   </select>
+         </div>
+     </div>
+ <div class="form-text">
+       Randevularýn kaça kaç alýnacaðýný belirler. Örn: 30 dakika = 09:00, 09:30, 10:00...
+     </div>
+     </div>
+
+         <div class="card bg-light mb-4">
+  <div class="card-body">
+        <h6 class="fw-bold mb-3">
+       <i class="fa-solid fa-eye me-2"></i>Önizleme
+      </h6>
+            <div class="row g-3">
+   <div class="col-md-4">
+  <div class="small text-muted">Çalýþma Saatleri</div>
+   <div class="fw-bold fs-5">
+      <i class="fa-solid fa-clock me-2 text-primary"></i>
+       <span id="previewBaslangic">@Model.BaslangicSaatiText</span>
+       <span class="mx-1">-</span>
+   <span id="previewBitis">@Model.BitisSaatiText</span>
+           </div>
+       </div>
+   <div class="col-md-4">
+       <div class="small text-muted">Randevu Dilimi</div>
+       <div class="fw-bold fs-5">
+       <i class="fa-solid fa-hourglass-half me-2 text-success"></i>
+      <span id="previewDilim">@Model.RandevuDilimiDakika</span> dk
+    </div>
+    </div>
+      <div class="col-md-4">
+     <div class="small text-muted">Günlük Slot Sayýsý (Tahmini)</div>
+       <div class="fw-bold fs-5">
+     <i class="fa-solid fa-list me-2 text-info"></i>
+   <span id="previewSlot">-</span> slot
+     </div>
+    </div>
+ </div>
+ </div>
+     </div>
+
+      <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+   <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">
+      <i class="fa-solid fa-arrow-left me-1"></i>Geri
+    </a>
+     <button type="submit" class="btn btn-primary btn-lg px-5">
+   <i class="fa-solid fa-save me-2"></i>Ayarlarý Kaydet
+     </button>
+     </div>
+    </form>
+     </div>
+    </div>
+
+       <div class="card mt-4 border-warning">
+ <div class="card-body">
+     <h6 class="text-warning">
+    <i class="fa-solid fa-triangle-exclamation me-2"></i>Önemli Uyarýlar
+   </h6>
+      <ul class="mb-0 small">
+<li>Bu ayarlarý deðiþtirdiðinizde, mevcut randevular etkilenmez.</li>
+   <li>Çalýþma saatleri dýþýnda yeni randevu alýnamaz.</li>
+       <li>Randevu dilimi, hizmet sürelerine uygun seçilmelidir.</li>
+      <li>Çok kýsa dilimler (5-10 dk) yoðun randevu trafiðine sebep olabilir.</li>
+  </ul>
+   </div>
+       </div>
+    </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Önizleme güncellemeleri
+ document.getElementById('BaslangicSaati').addEventListener('change', function() {
+        document.getElementById('previewBaslangic').innerText = this.value;
+    hesaplaSlotSayisi();
+   });
+
+   document.getElementById('BitisSaati').addEventListener('change', function() {
+    document.getElementById('previewBitis').innerText = this.value;
+      hesaplaSlotSayisi();
+ });
+
+        document.getElementById('RandevuDilimiDakika').addEventListener('change', function() {
+   document.getElementById('previewDilim').innerText = this.value;
+  hesaplaSlotSayisi();
+        });
+
+   function hesaplaSlotSayisi() {
+      var baslangic = document.getElementById('BaslangicSaati').value;
+   var bitis = document.getElementById('BitisSaati').value;
+    var dilim = parseInt(document.getElementById('RandevuDilimiDakika').value) || 30;
+
+       if (baslangic && bitis) {
+     var [bH, bM] = baslangic.split(':').map(Number);
+     var [eH, eM] = bitis.split(':').map(Number);
+
+      var toplamDakika = (eH * 60 + eM) - (bH * 60 + bM);
+     var slotSayisi = Math.floor(toplamDakika / dilim);
+
+       document.getElementById('previewSlot').innerText = slotSayisi > 0 ? slotSayisi : '-';
+      }
+        }
+
+      // Sayfa yüklendiðinde hesapla
+      hesaplaSlotSayisi();
+    </script>
+}
+
+<style>
+    .form-control-lg {
+        font-size: 1.1rem;
+    }
+    
+  .fw-semibold {
+        font-weight: 600;
+    }
+</style>

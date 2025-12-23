@@ -18,17 +18,23 @@ public class RandevuController : Controller
 {
     private readonly IRandevuServisi _randevuServisi;
     private readonly IPersonelServisi _personelServisi;
+    private readonly IHizmetServisi _hizmetServisi;
+    private readonly ISalonAyarlariServisi _salonAyarlariServisi;
     private readonly UserManager<UygulamaKullanicisi> _userManager;
     private readonly BerberDbContext _dbContext;
 
     public RandevuController(
         IRandevuServisi randevuServisi,
         IPersonelServisi personelServisi,
+        IHizmetServisi hizmetServisi,
+        ISalonAyarlariServisi salonAyarlariServisi,
         UserManager<UygulamaKullanicisi> userManager,
         BerberDbContext dbContext)
     {
         _randevuServisi = randevuServisi;
         _personelServisi = personelServisi;
+        _hizmetServisi = hizmetServisi;
+        _salonAyarlariServisi = salonAyarlariServisi;
         _userManager = userManager;
         _dbContext = dbContext;
     }
@@ -38,7 +44,8 @@ public class RandevuController : Controller
     {
         var vm = new RandevuOlusturViewModel
         {
-            Personeller = (await _personelServisi.AktifPersonelleriGetirAsync()).ToList()
+            Personeller = (await _personelServisi.AktifPersonelleriGetirAsync()).ToList(),
+            Hizmetler = (await _hizmetServisi.AktifHizmetleriGetirAsync()).ToList()
         };
         return View(vm);
     }
@@ -49,6 +56,7 @@ public class RandevuController : Controller
         if (!ModelState.IsValid)
         {
             model.Personeller = (await _personelServisi.AktifPersonelleriGetirAsync()).ToList();
+            model.Hizmetler = (await _hizmetServisi.AktifHizmetleriGetirAsync()).ToList();
             return View(model);
         }
 
@@ -73,6 +81,7 @@ public class RandevuController : Controller
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             model.Personeller = (await _personelServisi.AktifPersonelleriGetirAsync()).ToList();
+            model.Hizmetler = (await _hizmetServisi.AktifHizmetleriGetirAsync()).ToList();
             return View(model);
         }
     }
@@ -83,6 +92,76 @@ public class RandevuController : Controller
         var userId = _userManager.GetUserId(User)!;
         var randevular = await _randevuServisi.KullaniciRandevulariniGetirAsync(userId);
         return View(randevular);
+    }
+
+    /// <summary>
+    /// Belirli bir tarih için uygun saat slotlarını döndürür
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> UygunSaatleriGetir(int personelId, DateTime tarih, int hizmetId)
+    {
+        try
+        {
+            // Salon çalışma saatlerini al
+            var ayarlar = await _salonAyarlariServisi.CalismaSaatleriAyarlariniGetirAsync();
+            var hizmet = await _hizmetServisi.HizmetGetirAsync(hizmetId);
+
+            if (hizmet == null)
+                return Json(new { success = false, message = "Hizmet bulunamadı" });
+
+            // O günkü mevcut randevuları al
+            var mevcutRandevular = await _randevuServisi.PersonelRandevulariniGetirAsync(personelId, tarih);
+            var mevcutRandevularFiltre = mevcutRandevular
+                .Where(r => r.Tarih.Date == tarih.Date && r.Durum != Domain.Enumlar.RandevuDurumu.IptalEdildi)
+                .ToList();
+
+            // Saat slotlarını oluştur
+            var slotlar = new List<object>();
+            var baslangic = ayarlar.BaslangicSaati;
+            var bitis = ayarlar.BitisSaati;
+            var dilim = ayarlar.RandevuDilimiDakika;
+            var hizmetSuresi = hizmet.Sure;
+
+            var simdikiSaat = baslangic;
+            while (simdikiSaat < bitis)
+            {
+                var slotBitis = simdikiSaat.Add(TimeSpan.FromMinutes(hizmetSuresi));
+
+                // Slot hizmet süresinden fazla ise son çalışma saatini aşıyor mu kontrol et
+                if (slotBitis > bitis)
+                    break;
+
+                // Bu slot dolu mu?
+                var doluMu = mevcutRandevularFiltre.Any(r =>
+                    {
+                        var randevuBitis = r.Saat.Add(TimeSpan.FromMinutes(hizmetSuresi));
+                        return (simdikiSaat >= r.Saat && simdikiSaat < randevuBitis) ||
+                               (slotBitis > r.Saat && slotBitis <= randevuBitis) ||
+                               (simdikiSaat <= r.Saat && slotBitis >= randevuBitis);
+                    });
+
+                // Geçmiş saat mi?
+                var simdi = DateTime.Now;
+                var slotTarihSaat = tarih.Date.Add(simdikiSaat);
+                var gecmisMi = slotTarihSaat < simdi;
+
+                slotlar.Add(new
+                {
+                    saat = simdikiSaat.ToString(@"hh\:mm"),
+                    uygun = !doluMu && !gecmisMi,
+                    dolu = doluMu,
+                    gecmis = gecmisMi
+                });
+
+                simdikiSaat = simdikiSaat.Add(TimeSpan.FromMinutes(dilim));
+            }
+
+            return Json(new { success = true, slotlar });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
     }
 
     [HttpGet]
