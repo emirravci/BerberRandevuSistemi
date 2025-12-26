@@ -1,0 +1,82 @@
+@{
+    ViewData["Title"] = "Debug Test";
+}
+
+<div class="container mt-5">
+    <h2>Tarih Debug Test</h2>
+    
+    <div class="card mb-3">
+        <div class="card-header">JavaScript Tarih Testi</div>
+        <div class="card-body">
+            <button class="btn btn-primary" onclick="testTarih()">Test Et</button>
+    <div id="jsResult" class="mt-3"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Günlük Ayarlar Testi</div>
+        <div class="card-body">
+         <button class="btn btn-success" onclick="testGunlukAyarlar()">Günlük Ayarlarý Test Et</button>
+            <div id="ayarResult" class="mt-3"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function testTarih() {
+     const bugün = new Date();
+        const pazartesi = new Date(2024, 11, 23); // 23 Aralýk 2024 Pazartesi
+        
+   let html = '<table class="table table-sm">';
+        html += '<tr><th>Açýklama</th><th>Deðer</th></tr>';
+        
+ html += `<tr><td>Bugün</td><td>${bugün}</td></tr>`;
+        html += `<tr><td>Bugün DayOfWeek</td><td>${bugün.getDay()}</td></tr>`;
+    html += `<tr><td>Bugün ISO</td><td>${bugün.toISOString()}</td></tr>`;
+html += `<tr><td>Bugün LocaleDateString</td><td>${bugün.toLocaleDateString('tr-TR')}</td></tr>`;
+     
+  html += `<tr><td colspan="2" class="bg-light"><strong>Pazartesi Test</strong></td></tr>`;
+        html += `<tr><td>Pazartesi (23 Ara)</td><td>${pazartesi}</td></tr>`;
+        html += `<tr><td>Pazartesi DayOfWeek</td><td>${pazartesi.getDay()}</td></tr>`;
+     html += `<tr><td>Pazartesi ISO</td><td>${pazartesi.toISOString()}</td></tr>`;
+        html += `<tr><td>Pazartesi YYYY-MM-DD</td><td>${pazartesi.toISOString().split('T')[0]}</td></tr>`;
+   
+        const tarihStr = '2024-12-23';
+      html += `<tr><td colspan="2" class="bg-light"><strong>String Parse Test</strong></td></tr>`;
+        html += `<tr><td>String</td><td>${tarihStr}</td></tr>`;
+        html += `<tr><td>new Date(tarihStr)</td><td>${new Date(tarihStr)}</td></tr>`;
+        html += `<tr><td>new Date(tarihStr) DayOfWeek</td><td>${new Date(tarihStr).getDay()}</td></tr>`;
+        html += `<tr><td>new Date(tarihStr) ISO</td><td>${new Date(tarihStr).toISOString()}</td></tr>`;
+  
+        html += '</table>';
+        
+        html += '<div class="alert alert-info mt-3">';
+     html += '<strong>Not:</strong> JavaScript DayOfWeek: 0=Pazar, 1=Pazartesi, 2=Salý...<br>';
+        html += '<strong>C# DayOfWeek:</strong> 0=Pazar, 1=Pazartesi, 2=Salý...';
+        html += '</div>';
+        
+        document.getElementById('jsResult').innerHTML = html;
+    }
+    
+    async function testGunlukAyarlar() {
+        document.getElementById('ayarResult').innerHTML = '<div class="spinner-border"></div> Yükleniyor...';
+        
+      try {
+            const response = await fetch('/Admin/CalismaSaatleri');
+    const html = await response.text();
+            
+         // Sadece tablo kýsmýný göster
+         const parser = new DOMParser();
+       const doc = parser.parseFromString(html, 'text/html');
+    const table = doc.querySelector('table');
+         
+  if (table) {
+  document.getElementById('ayarResult').innerHTML = table.outerHTML;
+     } else {
+      document.getElementById('ayarResult').innerHTML = '<div class="alert alert-warning">Tablo bulunamadý</div>';
+ }
+        } catch (error) {
+      document.getElementById('ayarResult').innerHTML = `<div class="alert alert-danger">Hata: ${error.message}</div>`;
+        }
+    }
+</script>

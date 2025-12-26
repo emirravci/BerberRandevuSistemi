@@ -171,7 +171,28 @@ body.app-body {
 }
 
 .sidebar-footer .btn {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.65rem 1rem;
+  border-radius: 0.6rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar-footer .btn-danger {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border: none;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.sidebar-footer .btn-danger:hover {
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.sidebar-footer .btn-danger i {
+  font-size: 1rem;
 }
 
 .app-main {
@@ -343,57 +364,4 @@ body.app-body {
 .modal-body dt {
   color: #6b7280;
   font-weight: 500;
-  font-size: 0.9rem;
-}
-
-.modal-body dd {
-  color: #111827;
-  font-size: 0.95rem;
-}
-
-.modal-footer {
-  border-top: 1px solid rgba(229, 231, 235, 0.9);
-  background: #f9fafb;
-  border-radius: 0 0 0.75rem 0.75rem;
-}
-
-/* Card body içindeki yazılar */
-.card-body {
-  color: #111827;
-}
-
-.card-body p {
-  color: #111827;
-  margin-bottom: 0.5rem;
-}
-
-.card-body strong {
-  color: #111827;
-  font-weight: 600;
-}
-
-.card-body h1,
-.card-body h2,
-.card-body h3,
-.card-body h4,
-.card-body h5,
-.card-body h6 {
-  color: #111827;
-}
-
-/* Form label'ları */
-.form-label {
-  color: #374151;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-/* Badge'ler */
-.badge {
-  font-weight: 500;
-}
-
-/* Text muted */
-.text-muted {
-  color: #6b7280 !important;
-}
+  font-sized

@@ -45,7 +45,9 @@ public class RandevuController : Controller
         var vm = new RandevuOlusturViewModel
         {
             Personeller = (await _personelServisi.AktifPersonelleriGetirAsync()).ToList(),
-            Hizmetler = (await _hizmetServisi.AktifHizmetleriGetirAsync()).ToList()
+            Hizmetler = (await _hizmetServisi.AktifHizmetleriGetirAsync())
+     .OrderBy(h => h.Ad)
+           .ToList()
         };
         return View(vm);
     }
@@ -56,7 +58,9 @@ public class RandevuController : Controller
         if (!ModelState.IsValid)
         {
             model.Personeller = (await _personelServisi.AktifPersonelleriGetirAsync()).ToList();
-            model.Hizmetler = (await _hizmetServisi.AktifHizmetleriGetirAsync()).ToList();
+            model.Hizmetler = (await _hizmetServisi.AktifHizmetleriGetirAsync())
+  .OrderBy(h => h.Ad)
+    .ToList();
             return View(model);
         }
 
@@ -81,7 +85,9 @@ public class RandevuController : Controller
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             model.Personeller = (await _personelServisi.AktifPersonelleriGetirAsync()).ToList();
-            model.Hizmetler = (await _hizmetServisi.AktifHizmetleriGetirAsync()).ToList();
+            model.Hizmetler = (await _hizmetServisi.AktifHizmetleriGetirAsync())
+                .OrderBy(h => h.Ad)
+    .ToList();
             return View(model);
         }
     }
@@ -98,69 +104,116 @@ public class RandevuController : Controller
     /// Belirli bir tarih için uygun saat slotlarını döndürür
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> UygunSaatleriGetir(int personelId, DateTime tarih, int hizmetId)
+    public async Task<IActionResult> UygunSaatleriGetir(string tarih, int personelId, int hizmetId)
     {
         try
-        {
-            // Salon çalışma saatlerini al
-            var ayarlar = await _salonAyarlariServisi.CalismaSaatleriAyarlariniGetirAsync();
+    {
+       // Tarihi açıkça parse et - timezone sorununu önle
+            if (!DateTime.TryParseExact(tarih, "yyyy-MM-dd", 
+                System.Globalization.CultureInfo.InvariantCulture, 
+          System.Globalization.DateTimeStyles.None, 
+        out DateTime parsedTarih))
+         {
+        return Json(new { success = false, message = "Geçersiz tarih formatı" });
+       }
+
+     // Tarihi normalize et (sadece tarih kısmı)
+parsedTarih = parsedTarih.Date;
+
+     // DEBUG: Gelen tarihi logla
+       Console.WriteLine($"DEBUG - Gelen tarih string: '{tarih}'");
+ Console.WriteLine($"DEBUG - Parse edilen tarih: {parsedTarih:yyyy-MM-dd dddd}");
+Console.WriteLine($"DEBUG - DayOfWeek: {parsedTarih.DayOfWeek} ({(int)parsedTarih.DayOfWeek})");
+
+   // Salon çalışma saatlerini al
+var ayarlar = await _salonAyarlariServisi.CalismaSaatleriAyarlariniGetirAsync();
             var hizmet = await _hizmetServisi.HizmetGetirAsync(hizmetId);
 
-            if (hizmet == null)
-                return Json(new { success = false, message = "Hizmet bulunamadı" });
+     if (hizmet == null)
+          return Json(new { success = false, message = "Hizmet bulunamadı" });
 
-            // O günkü mevcut randevuları al
-            var mevcutRandevular = await _randevuServisi.PersonelRandevulariniGetirAsync(personelId, tarih);
-            var mevcutRandevularFiltre = mevcutRandevular
-                .Where(r => r.Tarih.Date == tarih.Date && r.Durum != Domain.Enumlar.RandevuDurumu.IptalEdildi)
-                .ToList();
+       // DEBUG: Tüm günlük ayarları logla
+       Console.WriteLine($"DEBUG - Günlük Ayarlar ({ayarlar.GunlukSaatler.Count} gün):");
+            foreach (var g in ayarlar.GunlukSaatler)
+     {
+            Console.WriteLine($"  {g.Gun} ({(int)g.Gun}): AçıkMı={g.AcikMi}, Başlangıç={g.BaslangicSaati}, Bitiş={g.BitisSaati}");
+       }
 
-            // Saat slotlarını oluştur
-            var slotlar = new List<object>();
-            var baslangic = ayarlar.BaslangicSaati;
-            var bitis = ayarlar.BitisSaati;
-            var dilim = ayarlar.RandevuDilimiDakika;
-            var hizmetSuresi = hizmet.Sure;
+          // Seçilen gün için çalışma saatlerini kontrol et
+            var gunAyari = ayarlar.GunlukSaatler.FirstOrDefault(g => g.Gun == parsedTarih.DayOfWeek);
 
-            var simdikiSaat = baslangic;
-            while (simdikiSaat < bitis)
+    Console.WriteLine($"DEBUG - Aranan gün: {parsedTarih.DayOfWeek} ({(int)parsedTarih.DayOfWeek})");
+        Console.WriteLine($"DEBUG - Bulunan ayar: {(gunAyari != null ? $"{gunAyari.Gun}, AçıkMı={gunAyari.AcikMi}" : "NULL")}");
+
+   // Gün kapalıysa
+  if (gunAyari == null || !gunAyari.AcikMi)
             {
-                var slotBitis = simdikiSaat.Add(TimeSpan.FromMinutes(hizmetSuresi));
-
-                // Slot hizmet süresinden fazla ise son çalışma saatini aşıyor mu kontrol et
-                if (slotBitis > bitis)
-                    break;
-
-                // Bu slot dolu mu?
-                var doluMu = mevcutRandevularFiltre.Any(r =>
-                    {
-                        var randevuBitis = r.Saat.Add(TimeSpan.FromMinutes(hizmetSuresi));
-                        return (simdikiSaat >= r.Saat && simdikiSaat < randevuBitis) ||
-                               (slotBitis > r.Saat && slotBitis <= randevuBitis) ||
-                               (simdikiSaat <= r.Saat && slotBitis >= randevuBitis);
-                    });
-
-                // Geçmiş saat mi?
-                var simdi = DateTime.Now;
-                var slotTarihSaat = tarih.Date.Add(simdikiSaat);
-                var gecmisMi = slotTarihSaat < simdi;
-
-                slotlar.Add(new
-                {
-                    saat = simdikiSaat.ToString(@"hh\:mm"),
-                    uygun = !doluMu && !gecmisMi,
-                    dolu = doluMu,
-                    gecmis = gecmisMi
-                });
-
-                simdikiSaat = simdikiSaat.Add(TimeSpan.FromMinutes(dilim));
+  var mesaj = $"{parsedTarih:dd MMMM dddd} günü salon kapalıdır.";
+ Console.WriteLine($"DEBUG - Gün kapalı mesajı: {mesaj}");
+   return Json(new { success = false, message = mesaj });
             }
 
-            return Json(new { success = true, slotlar });
+ // O günün çalışma saatlerini kullan
+            var baslangic = gunAyari.BaslangicSaati;
+            var bitis = gunAyari.BitisSaati;
+
+            Console.WriteLine($"DEBUG - Kullanılacak saatler: {baslangic} - {bitis}");
+
+// O günkü mevcut randevuları al
+      var mevcutRandevular = await _randevuServisi.PersonelRandevulariniGetirAsync(personelId, parsedTarih);
+            var mevcutRandevularFiltre = mevcutRandevular
+      .Where(r => r.Tarih.Date == parsedTarih.Date && r.Durum != Domain.Enumlar.RandevuDurumu.IptalEdildi)
+                .ToList();
+
+          Console.WriteLine($"DEBUG - Mevcut randevu sayısı: {mevcutRandevularFiltre.Count}");
+
+          // Saat slotlarını oluştur
+            var slotlar = new List<object>();
+            var dilim = ayarlar.RandevuDilimiDakika;
+  var hizmetSuresi = hizmet.Sure;
+
+var simdikiSaat = baslangic;
+          while (simdikiSaat < bitis)
+     {
+  var slotBitis = simdikiSaat.Add(TimeSpan.FromMinutes(hizmetSuresi));
+
+    // Slot hizmet süresinden fazla ise son çalışma saatini aşıyor mu kontrol et
+          if (slotBitis > bitis)
+      break;
+
+         // Bu slot dolu mu?
+      var doluMu = mevcutRandevularFiltre.Any(r =>
+   {
+     var randevuBitis = r.Saat.Add(TimeSpan.FromMinutes(hizmetSuresi));
+   return (simdikiSaat >= r.Saat && simdikiSaat < randevuBitis) ||
+          (slotBitis > r.Saat && slotBitis <= randevuBitis) ||
+         (simdikiSaat <= r.Saat && slotBitis >= randevuBitis);
+       });
+
+   // Geçmiş saat mi?
+                var simdi = DateTime.Now;
+        var slotTarihSaat = parsedTarih.Date.Add(simdikiSaat);
+     var gecmisMi = slotTarihSaat < simdi;
+
+        slotlar.Add(new
+  {
+               saat = simdikiSaat.ToString(@"hh\:mm"),
+         uygun = !doluMu && !gecmisMi,
+       dolu = doluMu,
+    gecmis = gecmisMi
+     });
+
+       simdikiSaat = simdikiSaat.Add(TimeSpan.FromMinutes(dilim));
+   }
+
+         Console.WriteLine($"DEBUG - Oluşturulan slot sayısı: {slotlar.Count}");
+      return Json(new { success = true, slotlar });
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = ex.Message });
+  Console.WriteLine($"DEBUG - HATA: {ex.Message}");
+       Console.WriteLine($"DEBUG - Stack Trace: {ex.StackTrace}");
+            return Json(new { success = false, message = $"Hata: {ex.Message}" });
         }
     }
 

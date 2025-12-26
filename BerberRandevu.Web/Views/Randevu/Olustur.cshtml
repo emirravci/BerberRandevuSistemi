@@ -6,8 +6,8 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
  <div class="col-lg-10 col-xl-8">
-            <div class="mb-4">
-                <h2><i class="fa-solid fa-calendar-plus me-2"></i>Randevu Al</h2>
+     <div class="mb-4">
+         <h2><i class="fa-solid fa-calendar-plus me-2"></i>Randevu Al</h2>
        <p class="text-muted">Aþaðýdaki adýmlarý takip ederek randevunuzu oluþturun.</p>
             </div>
 
@@ -16,50 +16,50 @@
    <div class="alert alert-success alert-dismissible fade show" role="alert">
      <i class="fa-solid fa-circle-check me-2"></i>@TempData["Basari"]
            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-           </div>
+     </div>
             }
 
     <form asp-action="Olustur" method="post" id="randevuForm">
   <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-     <!-- Adým 1: Personel Seçimi -->
+ <!-- Adým 1: Personel Seçimi -->
     <div class="card shadow-sm mb-3">
      <div class="card-header bg-primary text-white">
    <h5 class="mb-0">
-     <span class="badge bg-light text-primary me-2">1</span>
+<span class="badge bg-light text-primary me-2">1</span>
         Personel Seçimi
     </h5>
-              </div>
-        <div class="card-body">
+   </div>
+   <div class="card-body">
      <div class="row">
        @foreach (var personel in Model.Personeller)
-            {
-         <div class="col-md-4 mb-3">
+         {
+   <div class="col-md-4 mb-3">
        <input type="radio" class="btn-check" name="PersonelId" value="@personel.Id" 
-         id="personel@(personel.Id)" autocomplete="off" required>
-                <label class="btn btn-outline-primary w-100 py-3" for="personel@(personel.Id)">
+    id="personel@(personel.Id)" autocomplete="off" required>
+      <label class="btn btn-outline-primary w-100 py-3" for="personel@(personel.Id)">
          <i class="fa-solid fa-user-tie fa-2x mb-2"></i>
      <div class="fw-bold">@personel.Ad @personel.Soyad</div>
     </label>
           </div>
-              }
+           }
           </div>
-         <span asp-validation-for="PersonelId" class="text-danger"></span>
-        </div>
+  <span asp-validation-for="PersonelId" class="text-danger"></span>
+ </div>
     </div>
 
-        <!-- Adým 2: Hizmet Seçimi -->
-                <div class="card shadow-sm mb-3">
+  <!-- Adým 2: Hizmet Seçimi -->
+   <div class="card shadow-sm mb-3">
         <div class="card-header bg-primary text-white">
-      <h5 class="mb-0">
+  <h5 class="mb-0">
         <span class="badge bg-light text-primary me-2">2</span>
       Hizmet Seçimi
             </h5>
           </div>
    <div class="card-body">
-              <div class="row">
+    <div class="row">
  @foreach (var hizmet in Model.Hizmetler)
-       {
+     {
  <div class="col-md-4 mb-3">
            <input type="radio" class="btn-check" name="HizmetId" value="@hizmet.Id" 
  id="hizmet@(hizmet.Id)" autocomplete="off" required
@@ -68,59 +68,59 @@
           <i class="fa-solid fa-scissors fa-2x mb-2"></i>
       <div class="fw-bold">@hizmet.Ad</div>
             <div class="small">@hizmet.Sure dk - @hizmet.Ucret.ToString("C2")</div>
-                </label>
+  </label>
      </div>
-  }
+}
       </div>
           <span asp-validation-for="HizmetId" class="text-danger"></span>
     <input type="hidden" asp-for="Ucret" id="ucretInput" />
          </div>
     </div>
 
-              <!-- Adým 3: Tarih Seçimi -->
-                <div class="card shadow-sm mb-3">
+    <!-- Adým 3: Tarih Seçimi -->
+       <div class="card shadow-sm mb-3">
       <div class="card-header bg-primary text-white">
-     <h5 class="mb-0">
+ <h5 class="mb-0">
      <span class="badge bg-light text-primary me-2">3</span>
           Tarih Seçimi
          </h5>
-     </div>
-     <div class="card-body">
-   <div id="tarihSecimiArea" class="text-center py-4">
-        <p class="text-muted">Lütfen önce personel ve hizmet seçiniz.</p>
+   </div>
+  <div class="card-body">
+            <div id="tarihSecimiArea" class="text-center py-4">
+   <p class="text-muted">Lütfen önce personel ve hizmet seçiniz.</p>
        </div>
-               <input type="hidden" asp-for="Tarih" id="tarihInput" />
+ <input type="hidden" asp-for="Tarih" id="tarihInput" />
        <span asp-validation-for="Tarih" class="text-danger"></span>
         </div>
      </div>
 
-                <!-- Adým 4: Saat Seçimi -->
+         <!-- Adým 4: Saat Seçimi -->
     <div class="card shadow-sm mb-4">
 <div class="card-header bg-primary text-white">
-       <h5 class="mb-0">
+    <h5 class="mb-0">
             <span class="badge bg-light text-primary me-2">4</span>
    Saat Seçimi
  </h5>
     </div>
-      <div class="card-body">
-             <div id="saatSecimiArea" class="text-center py-4">
+<div class="card-body">
+     <div id="saatSecimiArea" class="text-center py-4">
  <p class="text-muted">Lütfen önce tarih seçiniz.</p>
      </div>
        <input type="hidden" asp-for="Saat" id="saatInput" />
    <span asp-validation-for="Saat" class="text-danger"></span>
-       </div>
-                </div>
+   </div>
+           </div>
 
   <div class="d-grid gap-2 d-md-flex justify-content-md-end">
      <a asp-action="BenimRandevularim" class="btn btn-secondary">
    <i class="fa-solid fa-arrow-left me-1"></i>Randevularým
-              </a>
+        </a>
                   <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn" disabled>
        <i class="fa-solid fa-calendar-check me-2"></i>Randevu Oluþtur
       </button>
-      </div>
+  </div>
      </form>
-        </div>
+      </div>
     </div>
 </div>
 
@@ -130,18 +130,20 @@
         let secilenPersonelId = null;
      let secilenHizmetId = null;
  let secilenTarih = null;
-        let secilenSaat = null;
+let secilenSaat = null;
+        let tarihOffset = 0; // Tarih kaydýrma için offset
+        const TARIH_SAYISI = 7; // Bir seferde gösterilecek tarih sayýsý
 
   // Personel seçimi
-        document.querySelectorAll('input[name="PersonelId"]').forEach(radio => {
+     document.querySelectorAll('input[name="PersonelId"]').forEach(radio => {
     radio.addEventListener('change', function() {
        secilenPersonelId = this.value;
        kontrolVeYukle();
-       });
-        });
+    });
+   });
 
  // Hizmet seçimi
-        document.querySelectorAll('input[name="HizmetId"]').forEach(radio => {
+ document.querySelectorAll('input[name="HizmetId"]').forEach(radio => {
           radio.addEventListener('change', function() {
         secilenHizmetId = this.value;
         const ucret = this.getAttribute('data-ucret');
@@ -152,110 +154,153 @@
 
         function kontrolVeYukle() {
          if (secilenPersonelId && secilenHizmetId) {
-   tarihleriGoster();
+ tarihOffset = 0; // Yeni seçim yapýldýðýnda offset sýfýrla
+            tarihleriGoster();
         } else {
-             document.getElementById('tarihSecimiArea').innerHTML = '<p class="text-muted">Lütfen önce personel ve hizmet seçiniz.</p>';
-            document.getElementById('saatSecimiArea').innerHTML = '<p class="text-muted">Lütfen önce tarih seçiniz.</p>';
-          }
+         document.getElementById('tarihSecimiArea').innerHTML = '<p class="text-muted">Lütfen önce personel ve hizmet seçiniz.</p>';
+      document.getElementById('saatSecimiArea').innerHTML = '<p class="text-muted">Lütfen önce tarih seçiniz.</p>';
+     }
         }
 
   function tarihleriGoster() {
-       const bugun = new Date();
-         let html = '<div class="d-flex justify-content-center flex-wrap gap-2">';
+   const bugun = new Date();
+         bugun.setHours(0, 0, 0, 0); // Saati sýfýrla
+         
+      let html = '<div class="tarih-carousel">';
+        
+      // Sol ok butonu
+html += `
+                <button type="button" class="carousel-nav-btn carousel-prev" onclick="tarihKaydir(-1)" ${tarihOffset === 0 ? 'disabled' : ''}>
+     <i class="fa-solid fa-chevron-left"></i>
+</button>
+  `;
+     
+   html += '<div class="tarih-container">';
       
-    for (let i = 0; i < 7; i++) {
+    for (let i = tarihOffset; i < tarihOffset + TARIH_SAYISI; i++) {
       const tarih = new Date(bugun);
       tarih.setDate(bugun.getDate() + i);
-             
-                const gun = tarih.toLocaleDateString('tr-TR', { weekday: 'short' });
+ 
+           const gun = tarih.toLocaleDateString('tr-TR', { weekday: 'short' });
       const gunSayi = tarih.getDate();
        const ay = tarih.toLocaleDateString('tr-TR', { month: 'short' });
    const tarihStr = tarih.toISOString().split('T')[0];
     
+ // Bugün mü kontrol et
+    const bugunMu = i === 0;
+            const bugunClass = bugunMu ? 'tarih-bugun' : '';
+
            html += `
-   <button type="button" class="btn btn-outline-primary tarih-btn px-4 py-3" data-tarih="${tarihStr}">
+   <button type="button" class="btn btn-outline-primary tarih-btn px-4 py-3 ${bugunClass}" data-tarih="${tarihStr}">
       <div class="small text-uppercase">${gun}</div>
         <div class="fs-4 fw-bold">${gunSayi}</div>
   <div class="small text-uppercase">${ay}</div>
-                </button>
+     ${bugunMu ? '<div class="tarih-badge">Bugün</div>' : ''}
+          </button>
     `;
-            }
+    }
+            
+            html += '</div>';
+
+     // Sað ok butonu
+            html += `
+       <button type="button" class="carousel-nav-btn carousel-next" onclick="tarihKaydir(1)">
+          <i class="fa-solid fa-chevron-right"></i>
+</button>
+            `;
 
      html += '</div>';
-            document.getElementById('tarihSecimiArea').innerHTML = html;
+      document.getElementById('tarihSecimiArea').innerHTML = html;
 
   // Tarih butonlarýna týklama eventi
  document.querySelectorAll('.tarih-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
+   btn.addEventListener('click', function() {
   document.querySelectorAll('.tarih-btn').forEach(b => b.classList.remove('active'));
        this.classList.add('active');
         secilenTarih = this.getAttribute('data-tarih');
-         document.getElementById('tarihInput').value = secilenTarih;
-             saatleriYukle();
+  document.getElementById('tarihInput').value = secilenTarih;
+        saatleriYukle();
        });
-            });
+       });
         }
 
-        function saatleriYukle() {
-      if (!secilenPersonelId || !secilenTarih || !secilenHizmetId) return;
+        function tarihKaydir(yon) {
+     const yeniOffset = tarihOffset + (yon * TARIH_SAYISI);
+            if (yeniOffset >= 0) {
+      tarihOffset = yeniOffset;
+ tarihleriGoster();
+      }
+        }
 
-            document.getElementById('saatSecimiArea').innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Yükleniyor...</span></div><p class="mt-2">Uygun saatler yükleniyor...</p></div>';
+  function saatleriYukle() {
+        if (!secilenPersonelId || !secilenTarih || !secilenHizmetId) return;
 
-       fetch(`/Randevu/UygunSaatleriGetir?personelId=${secilenPersonelId}&tarih=${secilenTarih}&hizmetId=${secilenHizmetId}`)
-      .then(response => response.json())
-         .then(data => {
-          if (data.success) {
-    let html = '<div class="d-flex justify-content-center flex-wrap gap-2">';
-        
-     data.slotlar.forEach(slot => {
-   let btnClass = 'btn-outline-secondary';
+    document.getElementById('saatSecimiArea').innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Yükleniyor...</span></div><p class="mt-2">Uygun saatler yükleniyor...</p></div>';
+
+        // DÜZELTME: Tarih string formatýný URL encode edelim ve local timezone'da gönderelim
+       const tarihYMD = secilenTarih; // Zaten YYYY-MM-DD formatýnda
+
+        console.log('DEBUG JS - Seçilen tarih:', secilenTarih);
+        console.log('DEBUG JS - PersonelId:', secilenPersonelId);
+        console.log('DEBUG JS - HizmetId:', secilenHizmetId);
+
+fetch(`/Randevu/UygunSaatleriGetir?personelId=${secilenPersonelId}&tarih=${encodeURIComponent(tarihYMD)}&hizmetId=${secilenHizmetId}`)
+            .then(response => response.json())
+            .then(data => {
+     console.log('DEBUG JS - API Response:', data);
+    
+         if (data.success) {
+       let html = '<div class="d-flex justify-content-center flex-wrap gap-2">';
+      
+  data.slotlar.forEach(slot => {
+         let btnClass = 'btn-outline-secondary';
         let disabled = '';
          
-   if (slot.gecmis) {
-                 btnClass = 'btn-outline-secondary opacity-50';
+       if (slot.gecmis) {
+      btnClass = 'btn-outline-secondary opacity-50';
+             disabled = 'disabled';
+  } else if (slot.dolu) {
+                 btnClass = 'btn-outline-danger';
    disabled = 'disabled';
-             } else if (slot.dolu) {
-           btnClass = 'btn-outline-danger';
-         disabled = 'disabled';
-            } else if (slot.uygun) {
-              btnClass = 'btn-outline-success';
-       }
-       
-            html += `
-   <button type="button" class="btn ${btnClass} saat-btn px-4 py-2 fw-bold" data-saat="${slot.saat}" ${disabled}>
-       ${slot.saat}
-      </button>
-         `;
-             });
-              
- html += '</div>';
-  html += '<div class="mt-4 text-center">';
-          html += '<span class="badge bg-success me-2"><i class="fa-solid fa-check me-1"></i>Uygun</span>';
-           html += '<span class="badge bg-danger me-2"><i class="fa-solid fa-times me-1"></i>Dolu</span>';
-       html += '<span class="badge bg-secondary"><i class="fa-solid fa-clock me-1"></i>Geçmiþ</span>';
-       html += '</div>';
-    document.getElementById('saatSecimiArea').innerHTML = html;
-
-            // Saat butonlarýna týklama eventi
-       document.querySelectorAll('.saat-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-  if (this.disabled) return;
-   document.querySelectorAll('.saat-btn').forEach(b => b.classList.remove('active'));
-this.classList.add('active');
-     secilenSaat = this.getAttribute('data-saat');
-    document.getElementById('saatInput').value = secilenSaat;
-        document.getElementById('submitBtn').disabled = false;
-                });
-         });
-             } else {
-           document.getElementById('saatSecimiArea').innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+      } else if (slot.uygun) {
+     btnClass = 'btn-outline-success';
               }
+       
+     html += `
+                <button type="button" class="btn ${btnClass} saat-btn px-4 py-2 fw-bold" data-saat="${slot.saat}" ${disabled}>
+         ${slot.saat}
+           </button>
+    `;
+         });
+          
+        html += '</div>';
+             html += '<div class="mt-4 text-center">';
+          html += '<span class="badge bg-success me-2"><i class="fa-solid fa-check me-1"></i>Uygun</span>';
+    html += '<span class="badge bg-danger me-2"><i class="fa-solid fa-times me-1"></i>Dolu</span>';
+          html += '<span class="badge bg-secondary"><i class="fa-solid fa-clock me-1"></i>Geçmiþ</span>';
+      html += '</div>';
+         document.getElementById('saatSecimiArea').innerHTML = html;
+
+                  // Saat butonlarýna týklama eventi
+      document.querySelectorAll('.saat-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+  if (this.disabled) return;
+             document.querySelectorAll('.saat-btn').forEach(b => b.classList.remove('active'));
+   this.classList.add('active');
+          secilenSaat = this.getAttribute('data-saat');
+            document.getElementById('saatInput').value = secilenSaat;
+     document.getElementById('submitBtn').disabled = false;
+     });
+       });
+     } else {
+      document.getElementById('saatSecimiArea').innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+    }
     })
- .catch(error => {
-        console.error('Hata:', error);
-       document.getElementById('saatSecimiArea').innerHTML = '<div class="alert alert-danger">Saatler yüklenirken hata oluþtu. Lütfen tekrar deneyin.</div>';
-  });
-        }
+      .catch(error => {
+           console.error('Hata:', error);
+ document.getElementById('saatSecimiArea').innerHTML = '<div class="alert alert-danger">Saatler yüklenirken hata oluþtu. Lütfen tekrar deneyin.</div>';
+            });
+ }
     </script>
 
     <style>
@@ -263,19 +308,68 @@ this.classList.add('active');
             background-color: var(--bs-primary) !important;
  color: white !important;
   border-color: var(--bs-primary) !important;
-        }
+}
 
         .btn-check:checked + label i {
     color: white !important;
       }
      
-        .tarih-btn, .saat-btn {
-       min-width: 90px;
-          transition: all 0.3s ease;
+        .tarih-carousel {
+            position: relative;
+            display: flex;
+   align-items: center;
+         gap: 1rem;
+        padding: 1rem 0;
         }
 
-        .tarih-btn:hover:not(:disabled),
-     .saat-btn:hover:not(:disabled) {
+        .tarih-container {
+         display: flex;
+       gap: 0.5rem;
+ overflow: hidden;
+       flex: 1;
+  justify-content: center;
+        }
+
+        .carousel-nav-btn {
+         background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            color: white;
+        width: 40px;
+          height: 40px;
+            border-radius: 50%;
+      display: flex;
+    align-items: center;
+   justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+            flex-shrink: 0;
+        }
+
+ .carousel-nav-btn:hover:not(:disabled) {
+   background: linear-gradient(135deg, #2563eb, #1d4ed8);
+     transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+        .carousel-nav-btn:disabled {
+          background: #e5e7eb;
+    color: #9ca3af;
+     cursor: not-allowed;
+    box-shadow: none;
+    }
+
+        .carousel-nav-btn i {
+            font-size: 1.1rem;
+        }
+
+  .tarih-btn {
+       min-width: 90px;
+          transition: all 0.3s ease;
+     position: relative;
+        }
+
+        .tarih-btn:hover:not(:disabled) {
           transform: translateY(-2px);
 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
  }
@@ -285,11 +379,39 @@ box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             color: white !important;
       border-color: var(--bs-primary) !important;
   }
+
+        .tarih-btn.tarih-bugun {
+         border-color: #22c55e;
+border-width: 2px;
+        }
+
+ .tarih-badge {
+            position: absolute;
+            top: -8px;
+     right: -8px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+     color: white;
+     font-size: 0.65rem;
+            padding: 2px 6px;
+         border-radius: 10px;
+            font-weight: 600;
+box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+        }
       
+        .saat-btn {
+         min-width: 90px;
+ transition: all 0.3s ease;
+        }
+
+        .saat-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
         .saat-btn.active {
-            background-color: var(--bs-success) !important;
+    background-color: var(--bs-success) !important;
  color: white !important;
-       border-color: var(--bs-success) !important;
+     border-color: var(--bs-success) !important;
         }
 
 .card {
@@ -298,7 +420,23 @@ box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
         .card:hover {
-            transform: translateY(-2px);
+        transform: translateY(-2px);
+     }
+
+        @@media (max-width: 768px) {
+.tarih-container {
+         gap: 0.25rem;
         }
-    </style>
+
+    .tarih-btn {
+         min-width: 70px;
+       padding: 0.5rem !important;
+    }
+
+     .carousel-nav-btn {
+           width: 35px;
+    height: 35px;
+     }
+    }
+ </style>
 }

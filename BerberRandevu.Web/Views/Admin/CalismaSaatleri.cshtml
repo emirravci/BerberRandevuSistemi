@@ -6,200 +6,248 @@
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-   <h2><i class="fa-solid fa-clock me-2"></i>Çalýþma Saatleri Ayarlarý</h2>
+        <h2><i class="fa-solid fa-clock me-2"></i>Çalýþma Saatleri Ayarlarý</h2>
     </div>
 
     @if (TempData["Basari"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-       <i class="fa-solid fa-circle-check me-2"></i>@TempData["Basari"]
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+  <i class="fa-solid fa-circle-check me-2"></i>@TempData["Basari"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <div class="row justify-content-center">
-    <div class="col-md-10 col-lg-8">
-  <div class="card shadow-sm">
-     <div class="card-header bg-primary text-white">
-      <h5 class="mb-0">
-      <i class="fa-solid fa-cog me-2"></i>Salon Çalýþma Saatleri ve Randevu Ayarlarý
+    <form asp-action="CalismaSaatleri" method="post" id="calismaForm">
+        <div class="row">
+    <!-- Sol Kolon: Genel Ayarlar -->
+         <div class="col-lg-4">
+      <div class="card shadow-sm mb-4 sticky-top" style="top: 20px;">
+      <div class="card-header bg-primary text-white">
+         <h5 class="mb-0">
+           <i class="fa-solid fa-cog me-2"></i>Genel Ayarlar
      </h5>
     </div>
-     <div class="card-body p-4">
-               <div class="alert alert-info">
-           <i class="fa-solid fa-info-circle me-2"></i>
-        <strong>Bilgi:</strong> Bu ayarlar tüm salon için geçerlidir. Çalýþma saatleri dýþýnda randevu alýnamaz.
-   </div>
+        <div class="card-body">
+       <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-            <form asp-action="CalismaSaatleri" method="post">
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-
-            <div class="row">
-          <div class="col-md-6">
-    <div class="mb-4">
+       <div class="mb-3">
   <label asp-for="BaslangicSaati" class="form-label fw-semibold">
-       <i class="fa-solid fa-sun me-1 text-warning"></i>
-Çalýþma Baþlangýç Saati
-      </label>
-         <input asp-for="BaslangicSaati" type="time" class="form-control form-control-lg" />
- <span asp-validation-for="BaslangicSaati" class="text-danger small"></span>
-     <div class="form-text">
-    Örn: 09:00 - Salon açýlýþ saati
- </div>
-     </div>
-  </div>
-
-      <div class="col-md-6">
-         <div class="mb-4">
-           <label asp-for="BitisSaati" class="form-label fw-semibold">
-            <i class="fa-solid fa-moon me-1 text-info"></i>
-        Çalýþma Bitiþ Saati
-       </label>
-       <input asp-for="BitisSaati" type="time" class="form-control form-control-lg" />
-          <span asp-validation-for="BitisSaati" class="text-danger small"></span>
-        <div class="form-text">
-    Örn: 20:00 - Salon kapanýþ saati
-      </div>
-   </div>
-    </div>
-    </div>
-
-       <div class="mb-4">
-     <label asp-for="RandevuDilimiDakika" class="form-label fw-semibold">
-     <i class="fa-solid fa-calendar-days me-1 text-success"></i>
-  Randevu Zaman Dilimi
-   </label>
-    <div class="row">
- <div class="col-md-6">
-    <input asp-for="RandevuDilimiDakika" type="number" class="form-control form-control-lg" 
-         min="5" max="120" step="5" />
-         <span asp-validation-for="RandevuDilimiDakika" class="text-danger small"></span>
-    </div>
-    <div class="col-md-6">
-<select class="form-select form-control-lg" id="dilimiSec" onchange="document.getElementById('RandevuDilimiDakika').value = this.value;">
-     <option value="">Hýzlý Seçim</option>
-   <option value="10">10 Dakika</option>
-       <option value="15">15 Dakika</option>
-   <option value="20">20 Dakika</option>
-       <option value="30" selected>30 Dakika</option>
-       <option value="45">45 Dakika</option>
-  <option value="60">60 Dakika (1 Saat)</option>
-   </select>
-         </div>
-     </div>
- <div class="form-text">
-       Randevularýn kaça kaç alýnacaðýný belirler. Örn: 30 dakika = 09:00, 09:30, 10:00...
-     </div>
+           <i class="fa-solid fa-sun me-1 text-warning"></i>
+        Varsayýlan Baþlangýç
+    </label>
+            <input asp-for="BaslangicSaati" type="time" class="form-control form-control-lg" />
+          <span asp-validation-for="BaslangicSaati" class="text-danger small"></span>
      </div>
 
-         <div class="card bg-light mb-4">
-  <div class="card-body">
-        <h6 class="fw-bold mb-3">
-       <i class="fa-solid fa-eye me-2"></i>Önizleme
-      </h6>
-            <div class="row g-3">
-   <div class="col-md-4">
-  <div class="small text-muted">Çalýþma Saatleri</div>
-   <div class="fw-bold fs-5">
-      <i class="fa-solid fa-clock me-2 text-primary"></i>
-       <span id="previewBaslangic">@Model.BaslangicSaatiText</span>
-       <span class="mx-1">-</span>
-   <span id="previewBitis">@Model.BitisSaatiText</span>
+    <div class="mb-3">
+             <label asp-for="BitisSaati" class="form-label fw-semibold">
+    <i class="fa-solid fa-moon me-1 text-info"></i>
+             Varsayýlan Bitiþ
+        </label>
+            <input asp-for="BitisSaati" type="time" class="form-control form-control-lg" />
+   <span asp-validation-for="BitisSaati" class="text-danger small"></span>
            </div>
-       </div>
-   <div class="col-md-4">
-       <div class="small text-muted">Randevu Dilimi</div>
-       <div class="fw-bold fs-5">
-       <i class="fa-solid fa-hourglass-half me-2 text-success"></i>
-      <span id="previewDilim">@Model.RandevuDilimiDakika</span> dk
-    </div>
-    </div>
-      <div class="col-md-4">
-     <div class="small text-muted">Günlük Slot Sayýsý (Tahmini)</div>
-       <div class="fw-bold fs-5">
-     <i class="fa-solid fa-list me-2 text-info"></i>
-   <span id="previewSlot">-</span> slot
-     </div>
-    </div>
- </div>
- </div>
-     </div>
 
-      <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-   <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">
-      <i class="fa-solid fa-arrow-left me-1"></i>Geri
-    </a>
-     <button type="submit" class="btn btn-primary btn-lg px-5">
-   <i class="fa-solid fa-save me-2"></i>Ayarlarý Kaydet
-     </button>
-     </div>
-    </form>
-     </div>
-    </div>
+ <div class="mb-3">
+     <label asp-for="RandevuDilimiDakika" class="form-label fw-semibold">
+                    <i class="fa-solid fa-calendar-days me-1 text-success"></i>
+           Randevu Dilimi
+      </label>
+   <div class="row">
+    <div class="col-6">
+         <input asp-for="RandevuDilimiDakika" type="number" class="form-control form-control-lg"
+  min="5" max="120" step="5" />
+          <span asp-validation-for="RandevuDilimiDakika" class="text-danger small"></span>
+  </div>
+  <div class="col-6">
+   <select class="form-select form-control-lg" id="dilimiSec"
+onchange="document.getElementById('RandevuDilimiDakika').value = this.value;">
+         <option value="">Hýzlý Seç</option>
+       <option value="15">15 dk</option>
+         <option value="30" selected>30 dk</option>
+     <option value="45">45 dk</option>
+        <option value="60">60 dk</option>
+   </select>
+</div>
+ </div>
+            </div>
 
-       <div class="card mt-4 border-warning">
- <div class="card-body">
-     <h6 class="text-warning">
-    <i class="fa-solid fa-triangle-exclamation me-2"></i>Önemli Uyarýlar
-   </h6>
-      <ul class="mb-0 small">
-<li>Bu ayarlarý deðiþtirdiðinizde, mevcut randevular etkilenmez.</li>
-   <li>Çalýþma saatleri dýþýnda yeni randevu alýnamaz.</li>
-       <li>Randevu dilimi, hizmet sürelerine uygun seçilmelidir.</li>
-      <li>Çok kýsa dilimler (5-10 dk) yoðun randevu trafiðine sebep olabilir.</li>
-  </ul>
+      <div class="alert alert-info mb-0">
+     <i class="fa-solid fa-info-circle me-2"></i>
+   <small>Bu ayarlar tüm günler için varsayýlan deðerlerdir.</small>
+                </div>
+           </div>
+    </div>
+            </div>
+
+          <!-- Sað Kolon: Günlük Ayarlar -->
+         <div class="col-lg-8">
+           <div class="card shadow-sm mb-4">
+       <div class="card-header bg-primary text-white">
+     <h5 class="mb-0">
+               <i class="fa-solid fa-calendar-week me-2"></i>Günlük Çalýþma Saatleri
+      </h5>
+              </div>
+        <div class="card-body p-0">
+           <div class="table-responsive">
+         <table class="table table-hover mb-0">
+      <thead class="table-light">
+         <tr>
+    <th style="width: 30%">Gün</th>
+          <th style="width: 20%" class="text-center">Durum</th>
+     <th style="width: 25%">Baþlangýç</th>
+ <th style="width: 25%">Bitiþ</th>
+  </tr>
+        </thead>
+  <tbody>
+       @for (int i = 0; i < Model.GunlukSaatler.Count; i++)
+      {
+        var gun = Model.GunlukSaatler[i];
+       var gunIconClass = gun.Gun switch
+      {
+    DayOfWeek.Monday => "fa-briefcase text-primary",
+         DayOfWeek.Tuesday => "fa-briefcase text-primary",
+          DayOfWeek.Wednesday => "fa-briefcase text-primary",
+           DayOfWeek.Thursday => "fa-briefcase text-primary",
+     DayOfWeek.Friday => "fa-briefcase text-primary",
+       DayOfWeek.Saturday => "fa-calendar-check text-warning",
+  DayOfWeek.Sunday => "fa-mug-hot text-danger",
+            _ => "fa-calendar"
+            };
+
+     <tr class="gun-row" data-gun="@i">
+       <td>
+         <div class="d-flex align-items-center">
+      <i class="fa-solid @gunIconClass me-2 fs-5"></i>
+   <div>
+      <div class="fw-bold">@gun.GunAdi</div>
+    <input type="hidden" asp-for="GunlukSaatler[i].Gun" />
+             <input type="hidden" asp-for="GunlukSaatler[i].GunAdi" />
+</div>
+    </div>
+               </td>
+   <td class="text-center">
+         <div class="form-check form-switch d-inline-block">
+   <input asp-for="GunlukSaatler[i].AcikMi" 
+                class="form-check-input gun-switch" 
+type="checkbox" 
+                 role="switch"
+         data-index="@i" />
+   <label class="form-check-label gun-durum-label">
+        <span class="badge bg-success acik-badge">Açýk</span>
+           <span class="badge bg-danger kapali-badge d-none">Kapalý</span>
+       </label>
+      </div>
+     </td>
+     <td>
+        <input asp-for="GunlukSaatler[i].BaslangicSaati" 
+    type="time" 
+                    class="form-control gun-saat-input" 
+    data-index="@i" />
+          </td>
+    <td>
+   <input asp-for="GunlukSaatler[i].BitisSaati" 
+  type="time" 
+   class="form-control gun-saat-input" 
+       data-index="@i" />
+          </td>
+   </tr>
+        }
+           </tbody>
+        </table>
    </div>
-       </div>
-    </div>
-    </div>
+                </div>
+            </div>
+
+       <div class="card border-warning">
+           <div class="card-body">
+            <h6 class="text-warning">
+       <i class="fa-solid fa-triangle-exclamation me-2"></i>Önemli Bilgiler
+             </h6>
+         <ul class="mb-0 small">
+     <li>Kapalý günlerde randevu alýnamaz.</li>
+    <li>Her gün için farklý çalýþma saatleri belirleyebilirsiniz.</li>
+         <li>Varsayýlan saatler tüm günlere otomatik uygulanýr.</li>
+            </ul>
+            </div>
+           </div>
+</div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">
+              <i class="fa-solid fa-arrow-left me-1"></i>Geri
+            </a>
+     <button type="submit" class="btn btn-primary btn-lg px-5">
+            <i class="fa-solid fa-save me-2"></i>Ayarlarý Kaydet
+ </button>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // Önizleme güncellemeleri
- document.getElementById('BaslangicSaati').addEventListener('change', function() {
-        document.getElementById('previewBaslangic').innerText = this.value;
-    hesaplaSlotSayisi();
-   });
-
-   document.getElementById('BitisSaati').addEventListener('change', function() {
-    document.getElementById('previewBitis').innerText = this.value;
-      hesaplaSlotSayisi();
- });
-
-        document.getElementById('RandevuDilimiDakika').addEventListener('change', function() {
-   document.getElementById('previewDilim').innerText = this.value;
-  hesaplaSlotSayisi();
+        document.addEventListener('DOMContentLoaded', function () {
+         // Gün switch'lerini dinle
+            document.querySelectorAll('.gun-switch').forEach(switchEl => {
+    updateGunDurum(switchEl);
+  
+       switchEl.addEventListener('change', function () {
+          updateGunDurum(this);
+     });
         });
 
-   function hesaplaSlotSayisi() {
-      var baslangic = document.getElementById('BaslangicSaati').value;
-   var bitis = document.getElementById('BitisSaati').value;
-    var dilim = parseInt(document.getElementById('RandevuDilimiDakika').value) || 30;
+    function updateGunDurum(switchEl) {
+     const index = switchEl.getAttribute('data-index');
+        const row = document.querySelector(`tr[data-gun="${index}"]`);
+     const saatInputs = row.querySelectorAll('.gun-saat-input');
+ const label = row.querySelector('.gun-durum-label');
+             const acikBadge = label.querySelector('.acik-badge');
+        const kapaliBadge = label.querySelector('.kapali-badge');
 
-       if (baslangic && bitis) {
-     var [bH, bM] = baslangic.split(':').map(Number);
-     var [eH, eM] = bitis.split(':').map(Number);
+       if (switchEl.checked) {
+             saatInputs.forEach(input => {
+          input.disabled = false;
+   input.classList.remove('bg-light');
+      });
+           row.classList.remove('table-secondary');
+  acikBadge.classList.remove('d-none');
+                    kapaliBadge.classList.add('d-none');
+     } else {
+           saatInputs.forEach(input => {
+       input.disabled = true;
+            input.classList.add('bg-light');
+       });
+   row.classList.add('table-secondary');
+        acikBadge.classList.add('d-none');
+           kapaliBadge.classList.remove('d-none');
+        }
+    }
+        });
+    </script>
 
-      var toplamDakika = (eH * 60 + eM) - (bH * 60 + bM);
-     var slotSayisi = Math.floor(toplamDakika / dilim);
+    <style>
+        .sticky-top {
+            position: sticky;
+          z-index: 1020;
+   }
 
-       document.getElementById('previewSlot').innerText = slotSayisi > 0 ? slotSayisi : '-';
-      }
+        .gun-row {
+      transition: all 0.3s ease;
         }
 
-      // Sayfa yüklendiðinde hesapla
-      hesaplaSlotSayisi();
-    </script>
-}
+        .gun-row.table-secondary {
+     opacity: 0.6;
+      }
 
-<style>
-    .form-control-lg {
-        font-size: 1.1rem;
-    }
-    
-  .fw-semibold {
-        font-weight: 600;
-    }
-</style>
+        .form-check-input:checked {
+          background-color: #22c55e;
+          border-color: #22c55e;
+   }
+
+      .gun-saat-input:disabled {
+         cursor: not-allowed;
+        }
+    </style>
+}

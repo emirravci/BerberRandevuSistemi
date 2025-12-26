@@ -532,42 +532,97 @@ Ad = model.Ad,
         {
     BaslangicSaati = ayarlar.BaslangicSaati,
           BitisSaati = ayarlar.BitisSaati,
-RandevuDilimiDakika = ayarlar.RandevuDilimiDakika
+RandevuDilimiDakika = ayarlar.RandevuDilimiDakika,
+GunlukSaatler = ayarlar.GunlukSaatler.Select(g => new GunlukCalismaSaatiViewModel
+ {
+       Gun = g.Gun,
+         GunAdi = GetGunAdi(g.Gun),
+   AcikMi = g.AcikMi,
+    BaslangicSaati = g.BaslangicSaati,
+BitisSaati = g.BitisSaati
+   }).ToList()
  };
 
-        return View(vm);
+        // DEBUG: ViewModel'deki değerleri logla
+        Console.WriteLine("DEBUG CONTROLLER - ViewModel GunlukSaatler:");
+        foreach (var g in vm.GunlukSaatler)
+        {
+Console.WriteLine($"  {g.GunAdi} ({g.Gun}): Açık={g.AcikMi}, {g.BaslangicSaati}-{g.BitisSaati}");
+        }
+
+      return View(vm);
     }
 
     [HttpPost]
     public async Task<IActionResult> CalismaSaatleri(CalismaSaatleriAyarViewModel model)
     {
-      if (!ModelState.IsValid)
-   return View(model);
+   if (!ModelState.IsValid)
+ return View(model);
 
-        if (model.BitisSaati <= model.BaslangicSaati)
-        {
-            ModelState.AddModelError(string.Empty, "Bitiş saati başlangıç saatinden sonra olmalıdır.");
-      return View(model);
-        }
-
-        try
-        {
-       var dto = new CalismaSaatleriAyarDto
-            {
-       BaslangicSaati = model.BaslangicSaati,
-           BitisSaati = model.BitisSaati,
-        RandevuDilimiDakika = model.RandevuDilimiDakika
-        };
-
-            await _salonAyarlariServisi.CalismaSaatleriAyarlariniKaydetAsync(dto);
-     TempData["Basari"] = "Çalışma saatleri ayarları başarıyla kaydedildi.";
-          return RedirectToAction(nameof(CalismaSaatleri));
-   }
-catch (Exception ex)
+   if (model.BitisSaati <= model.BaslangicSaati)
  {
-            ModelState.AddModelError(string.Empty, $"Hata: {ex.Message}");
-      return View(model);
+  ModelState.AddModelError(string.Empty, "Bitiş saati başlangıç saatinden sonra olmalıdır.");
+  return View(model);
+   }
+
+     try
+     {
+  Console.WriteLine("DEBUG CONTROLLER POST - Kaydedilecek değerler:");
+          Console.WriteLine($"  Genel: {model.BaslangicSaati} - {model.BitisSaati}, Dilim: {model.RandevuDilimiDakika}");
+      Console.WriteLine($"  Günlük Saatler: {model.GunlukSaatler.Count} gün");
+            foreach (var g in model.GunlukSaatler)
+ {
+              Console.WriteLine($"    {g.GunAdi} ({g.Gun}): Açık={g.AcikMi}, {g.BaslangicSaati}-{g.BitisSaati}");
+            }
+
+     var dto = new CalismaSaatleriAyarDto
+     {
+ BaslangicSaati = model.BaslangicSaati,
+    BitisSaati = model.BitisSaati,
+     RandevuDilimiDakika = model.RandevuDilimiDakika,
+    GunlukSaatler = model.GunlukSaatler.Select(g => new GunlukCalismaSaatiDto
+  {
+     Gun = g.Gun,
+    AcikMi = g.AcikMi,
+       BaslangicSaati = g.BaslangicSaati,
+  BitisSaati = g.BitisSaati
+   }).ToList()
+       };
+
+  await _salonAyarlariServisi.CalismaSaatleriAyarlariniKaydetAsync(dto);
+     
+    Console.WriteLine("DEBUG CONTROLLER POST - Kayıt başarılı");
+     
+            TempData["Basari"] = "Çalışma saatleri ayarları başarıyla kaydedildi.";
+  return RedirectToAction(nameof(CalismaSaatleri));
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"DEBUG CONTROLLER POST - Hata: {ex.Message}");
+ ModelState.AddModelError(string.Empty, $"Hata: {ex.Message}");
+ return View(model);
+  }
+    }
+
+    private string GetGunAdi(DayOfWeek gun)
+    {
+ return gun switch
+    {
+      DayOfWeek.Monday => "Pazartesi",
+   DayOfWeek.Tuesday => "Salı",
+          DayOfWeek.Wednesday => "Çarşamba",
+      DayOfWeek.Thursday => "Perşembe",
+     DayOfWeek.Friday => "Cuma",
+    DayOfWeek.Saturday => "Cumartesi",
+       DayOfWeek.Sunday => "Pazar",
+    _ => gun.ToString()
+      };
+    }
+
+    [HttpGet]
+    public IActionResult DebugTest()
+    {
+        return View();
     }
 
     #endregion
